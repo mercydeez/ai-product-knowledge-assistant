@@ -1,0 +1,290 @@
+[
+  {
+    "chunk_id": "SKU-1001_chunk_1",
+    "product_id": "SKU-1001",
+    "product_name": "Luna Everyday Cotton Shirt",
+    "text": "Product ID: SKU-1001\nProduct Name: Luna Everyday Cotton Shirt\nCategory: Tops\nBrand: Aurelia"
+  },
+  {
+    "chunk_id": "SKU-1001_chunk_2",
+    "product_id": "SKU-1001",
+    "product_name": "Luna Everyday Cotton Shirt",
+    "text": "Brand: Aurelia\nColor: White\nMaterial: 100% Cotton\nPrice: INR 1499.0"
+  },
+  {
+    "chunk_id": "SKU-1001_chunk_3",
+    "product_id": "SKU-1001",
+    "product_name": "Luna Everyday Cotton Shirt",
+    "text": "Price: INR 1499.0\nAvailable Sizes: XS, S, M, L\nStock: 42\nDescription: A breathable everyday shirt with a relaxed fit, button front, and soft cotton finish for all-day comfort."
+  },
+  {
+    "chunk_id": "SKU-1001_chunk_4",
+    "product_id": "SKU-1001",
+    "product_name": "Luna Everyday Cotton Shirt",
+    "text": "Description: A breathable everyday shirt with a relaxed fit, button front, and soft cotton finish for all-day comfort.\nCare Instructions: Machine wash cold with similar colors. Tumble dry low. Warm iron if needed."
+  },
+  {
+    "chunk_id": "SKU-1002_chunk_1",
+    "product_id": "SKU-1002",
+    "product_name": "Noir Slim Fit Denim Jeans",
+    "text": "Product ID: SKU-1002\nProduct Name: Noir Slim Fit Denim Jeans\nCategory: Bottoms\nBrand: Aurelia"
+  },
+  {
+    "chunk_id": "SKU-1002_chunk_2",
+    "product_id": "SKU-1002",
+    "product_name": "Noir Slim Fit Denim Jeans",
+    "text": "Brand: Aurelia\nColor: Black\nMaterial: Cotton Denim with 2% Elastane\nPrice: INR 2299.0"
+  },
+  {
+    "chunk_id": "SKU-1002_chunk_3",
+    "product_id": "SKU-1002",
+    "product_name": "Noir Slim Fit Denim Jeans",
+    "text": "Price: INR 2299.0\nAvailable Sizes: 28, 30, 32, 34, 36\nStock: 31\nDescription: Stretch denim jeans with a slim silhouette, mid-rise waist, and clean finish for smart casual wear."
+  },
+  {
+    "chunk_id": "SKU-1002_chunk_4",
+    "product_id": "SKU-1002",
+    "product_name": "Noir Slim Fit Denim Jeans",
+    "text": "Description: Stretch denim jeans with a slim silhouette, mid-rise waist, and clean finish for smart casual wear.\nCare Instructions: Wash inside out in cold water. Do not bleach. Line dry away from direct sunlight."
+  },
+  {
+    "chunk_id": "SKU-1003_chunk_1",
+    "product_id": "SKU-1003",
+    "product_name": "Sienna Floral Summer Dress",
+    "text": "Product ID: SKU-1003\nProduct Name: Sienna Floral Summer Dress\nCategory: Dresses\nBrand: Maison Bloom"
+  },
+  {
+    "chunk_id": "SKU-1003_chunk_2",
+    "product_id": "SKU-1003",
+    "product_name": "Sienna Floral Summer Dress",
+    "text": "Brand: Maison Bloom\nColor: Coral\nMaterial: Viscose Blend\nPrice: INR 2799.0"
+  },
+  {
+    "chunk_id": "SKU-1003_chunk_3",
+    "product_id": "SKU-1003",
+    "product_name": "Sienna Floral Summer Dress",
+    "text": "Price: INR 2799.0\nAvailable Sizes: S, M, L, XL\nStock: 18\nDescription: A lightweight midi dress with floral print, adjustable straps, and a flowing silhouette for warm weather."
+  },
+  {
+    "chunk_id": "SKU-1003_chunk_4",
+    "product_id": "SKU-1003",
+    "product_name": "Sienna Floral Summer Dress",
+    "text": "Description: A lightweight midi dress with floral print, adjustable straps, and a flowing silhouette for warm weather.\nCare Instructions: Hand wash separately in cold water. Do not wring. Dry flat in shade."
+  },
+  {
+    "chunk_id": "SKU-1004_chunk_1",
+    "product_id": "SKU-1004",
+    "product_name": "Harbor Linen Overshirt",
+    "text": "Product ID: SKU-1004\nProduct Name: Harbor Linen Overshirt\nCategory: Outerwear\nBrand: North Thread"
+  },
+  {
+    "chunk_id": "SKU-1004_chunk_2",
+    "product_id": "SKU-1004",
+    "product_name": "Harbor Linen Overshirt",
+    "text": "Brand: North Thread\nColor: Beige\nMaterial: 55% Linen, 45% Cotton\nPrice: INR 2599.0"
+  },
+  {
+    "chunk_id": "SKU-1004_chunk_3",
+    "product_id": "SKU-1004",
+    "product_name": "Harbor Linen Overshirt",
+    "text": "Price: INR 2599.0\nAvailable Sizes: S, M, L, XL\nStock: 24\nDescription: A lightweight overshirt designed for layering, with front pockets and a naturally textured linen blend."
+  },
+  {
+    "chunk_id": "SKU-1004_chunk_4",
+    "product_id": "SKU-1004",
+    "product_name": "Harbor Linen Overshirt",
+    "text": "Description: A lightweight overshirt designed for layering, with front pockets and a naturally textured linen blend.\nCare Instructions: Machine wash gentle in cold water. Hang to dry. Steam to remove wrinkles."
+  },
+  {
+    "chunk_id": "SKU-1005_chunk_1",
+    "product_id": "SKU-1005",
+    "product_name": "Metro Performance Polo",
+    "text": "Product ID: SKU-1005\nProduct Name: Metro Performance Polo\nCategory: Tops\nBrand: Vertex Move"
+  },
+  {
+    "chunk_id": "SKU-1005_chunk_2",
+    "product_id": "SKU-1005",
+    "product_name": "Metro Performance Polo",
+    "text": "Brand: Vertex Move\nColor: Navy\nMaterial: Polyester Performance Knit\nPrice: INR 1899.0"
+  },
+  {
+    "chunk_id": "SKU-1005_chunk_3",
+    "product_id": "SKU-1005",
+    "product_name": "Metro Performance Polo",
+    "text": "Price: INR 1899.0\nAvailable Sizes: S, M, L, XL, XXL\nStock: 56\nDescription: Moisture-wicking polo shirt with four-way stretch and wrinkle-resistant fabric for travel or active days."
+  },
+  {
+    "chunk_id": "SKU-1005_chunk_4",
+    "product_id": "SKU-1005",
+    "product_name": "Metro Performance Polo",
+    "text": "Description: Moisture-wicking polo shirt with four-way stretch and wrinkle-resistant fabric for travel or active days.\nCare Instructions: Machine wash cold. Do not use fabric softener. Tumble dry low."
+  },
+  {
+    "chunk_id": "SKU-1006_chunk_1",
+    "product_id": "SKU-1006",
+    "product_name": "Willow Straight Leg Trousers",
+    "text": "Product ID: SKU-1006\nProduct Name: Willow Straight Leg Trousers\nCategory: Bottoms\nBrand: Maison Bloom"
+  },
+  {
+    "chunk_id": "SKU-1006_chunk_2",
+    "product_id": "SKU-1006",
+    "product_name": "Willow Straight Leg Trousers",
+    "text": "Brand: Maison Bloom\nColor: Olive\nMaterial: Polyester Rayon Blend\nPrice: INR 2499.0"
+  },
+  {
+    "chunk_id": "SKU-1006_chunk_3",
+    "product_id": "SKU-1006",
+    "product_name": "Willow Straight Leg Trousers",
+    "text": "Price: INR 2499.0\nAvailable Sizes: S, M, L, XL\nStock: 27\nDescription: Tailored straight-leg trousers with front pleats and a high-rise waist suited for office and evening wear."
+  },
+  {
+    "chunk_id": "SKU-1006_chunk_4",
+    "product_id": "SKU-1006",
+    "product_name": "Willow Straight Leg Trousers",
+    "text": "Description: Tailored straight-leg trousers with front pleats and a high-rise waist suited for office and evening wear.\nCare Instructions: Dry clean recommended. Cool iron on reverse side if required."
+  },
+  {
+    "chunk_id": "SKU-1007_chunk_1",
+    "product_id": "SKU-1007",
+    "product_name": "Cloud Soft Knit Cardigan",
+    "text": "Product ID: SKU-1007\nProduct Name: Cloud Soft Knit Cardigan\nCategory: Knitwear\nBrand: Aurelia"
+  },
+  {
+    "chunk_id": "SKU-1007_chunk_2",
+    "product_id": "SKU-1007",
+    "product_name": "Cloud Soft Knit Cardigan",
+    "text": "Brand: Aurelia\nColor: Lavender\nMaterial: Acrylic Wool Blend\nPrice: INR 2199.0"
+  },
+  {
+    "chunk_id": "SKU-1007_chunk_3",
+    "product_id": "SKU-1007",
+    "product_name": "Cloud Soft Knit Cardigan",
+    "text": "Price: INR 2199.0\nAvailable Sizes: XS, S, M, L\nStock: 14\nDescription: A soft button-front cardigan with ribbed cuffs and a cozy lightweight knit for transitional weather."
+  },
+  {
+    "chunk_id": "SKU-1007_chunk_4",
+    "product_id": "SKU-1007",
+    "product_name": "Cloud Soft Knit Cardigan",
+    "text": "Description: A soft button-front cardigan with ribbed cuffs and a cozy lightweight knit for transitional weather.\nCare Instructions: Hand wash cold. Reshape while damp. Dry flat."
+  },
+  {
+    "chunk_id": "SKU-1008_chunk_1",
+    "product_id": "SKU-1008",
+    "product_name": "Urban Cargo Joggers",
+    "text": "Product ID: SKU-1008\nProduct Name: Urban Cargo Joggers\nCategory: Bottoms\nBrand: Vertex Move"
+  },
+  {
+    "chunk_id": "SKU-1008_chunk_2",
+    "product_id": "SKU-1008",
+    "product_name": "Urban Cargo Joggers",
+    "text": "Brand: Vertex Move\nColor: Charcoal\nMaterial: Cotton Twill\nPrice: INR 2099.0"
+  },
+  {
+    "chunk_id": "SKU-1008_chunk_3",
+    "product_id": "SKU-1008",
+    "product_name": "Urban Cargo Joggers",
+    "text": "Price: INR 2099.0\nAvailable Sizes: S, M, L, XL\nStock: 38\nDescription: Tapered cargo joggers with elastic cuffs, utility pockets, and a comfortable waistband for casual wear."
+  },
+  {
+    "chunk_id": "SKU-1008_chunk_4",
+    "product_id": "SKU-1008",
+    "product_name": "Urban Cargo Joggers",
+    "text": "Description: Tapered cargo joggers with elastic cuffs, utility pockets, and a comfortable waistband for casual wear.\nCare Instructions: Machine wash cold with dark colors. Do not bleach. Tumble dry low."
+  },
+  {
+    "chunk_id": "SKU-1009_chunk_1",
+    "product_id": "SKU-1009",
+    "product_name": "Aura Satin Blouse",
+    "text": "Product ID: SKU-1009\nProduct Name: Aura Satin Blouse\nCategory: Tops\nBrand: Maison Bloom"
+  },
+  {
+    "chunk_id": "SKU-1009_chunk_2",
+    "product_id": "SKU-1009",
+    "product_name": "Aura Satin Blouse",
+    "text": "Brand: Maison Bloom\nColor: Emerald\nMaterial: Recycled Satin Polyester\nPrice: INR 1999.0"
+  },
+  {
+    "chunk_id": "SKU-1009_chunk_3",
+    "product_id": "SKU-1009",
+    "product_name": "Aura Satin Blouse",
+    "text": "Price: INR 1999.0\nAvailable Sizes: XS, S, M, L\nStock: 22\nDescription: Elegant satin blouse with a soft drape, concealed placket, and subtle sheen for dressy occasions."
+  },
+  {
+    "chunk_id": "SKU-1009_chunk_4",
+    "product_id": "SKU-1009",
+    "product_name": "Aura Satin Blouse",
+    "text": "Description: Elegant satin blouse with a soft drape, concealed placket, and subtle sheen for dressy occasions.\nCare Instructions: Hand wash cold or dry clean. Do not tumble dry. Use low iron if needed."
+  },
+  {
+    "chunk_id": "SKU-1010_chunk_1",
+    "product_id": "SKU-1010",
+    "product_name": "Trail Water-Resistant Jacket",
+    "text": "Product ID: SKU-1010\nProduct Name: Trail Water-Resistant Jacket\nCategory: Outerwear\nBrand: North Thread"
+  },
+  {
+    "chunk_id": "SKU-1010_chunk_2",
+    "product_id": "SKU-1010",
+    "product_name": "Trail Water-Resistant Jacket",
+    "text": "Brand: North Thread\nColor: Forest Green\nMaterial: Nylon Shell\nPrice: INR 3499.0"
+  },
+  {
+    "chunk_id": "SKU-1010_chunk_3",
+    "product_id": "SKU-1010",
+    "product_name": "Trail Water-Resistant Jacket",
+    "text": "Price: INR 3499.0\nAvailable Sizes: S, M, L, XL, XXL\nStock: 19\nDescription: A lightweight hooded jacket with water-resistant finish, zip pockets, and breathable mesh lining."
+  },
+  {
+    "chunk_id": "SKU-1010_chunk_4",
+    "product_id": "SKU-1010",
+    "product_name": "Trail Water-Resistant Jacket",
+    "text": "Description: A lightweight hooded jacket with water-resistant finish, zip pockets, and breathable mesh lining.\nCare Instructions: Machine wash cold on gentle cycle. Hang dry. Do not iron."
+  },
+  {
+    "chunk_id": "SKU-1011_chunk_1",
+    "product_id": "SKU-1011",
+    "product_name": "Weekend Graphic Tee",
+    "text": "Product ID: SKU-1011\nProduct Name: Weekend Graphic Tee\nCategory: Tops\nBrand: North Thread"
+  },
+  {
+    "chunk_id": "SKU-1011_chunk_2",
+    "product_id": "SKU-1011",
+    "product_name": "Weekend Graphic Tee",
+    "text": "Brand: North Thread\nColor: Heather Grey\nMaterial: Cotton Jersey\nPrice: INR 999.0"
+  },
+  {
+    "chunk_id": "SKU-1011_chunk_3",
+    "product_id": "SKU-1011",
+    "product_name": "Weekend Graphic Tee",
+    "text": "Price: INR 999.0\nAvailable Sizes: S, M, L, XL\nStock: 64\nDescription: Relaxed-fit crew neck t-shirt with a vintage-inspired graphic print and soft washed feel."
+  },
+  {
+    "chunk_id": "SKU-1011_chunk_4",
+    "product_id": "SKU-1011",
+    "product_name": "Weekend Graphic Tee",
+    "text": "Description: Relaxed-fit crew neck t-shirt with a vintage-inspired graphic print and soft washed feel.\nCare Instructions: Machine wash cold inside out. Do not bleach. Tumble dry low."
+  },
+  {
+    "chunk_id": "SKU-1012_chunk_1",
+    "product_id": "SKU-1012",
+    "product_name": "Celeste Pleated Midi Skirt",
+    "text": "Product ID: SKU-1012\nProduct Name: Celeste Pleated Midi Skirt\nCategory: Skirts\nBrand: Maison Bloom"
+  },
+  {
+    "chunk_id": "SKU-1012_chunk_2",
+    "product_id": "SKU-1012",
+    "product_name": "Celeste Pleated Midi Skirt",
+    "text": "Brand: Maison Bloom\nColor: Dusty Rose\nMaterial: Chiffon Blend\nPrice: INR 2399.0"
+  },
+  {
+    "chunk_id": "SKU-1012_chunk_3",
+    "product_id": "SKU-1012",
+    "product_name": "Celeste Pleated Midi Skirt",
+    "text": "Price: INR 2399.0\nAvailable Sizes: XS, S, M, L\nStock: 16\nDescription: Flowing pleated midi skirt with elastic waistband and lightweight layers for elevated daywear."
+  },
+  {
+    "chunk_id": "SKU-1012_chunk_4",
+    "product_id": "SKU-1012",
+    "product_name": "Celeste Pleated Midi Skirt",
+    "text": "Description: Flowing pleated midi skirt with elastic waistband and lightweight layers for elevated daywear.\nCare Instructions: Hand wash cold. Do not wring. Hang to dry in shade."
+  }
+]
