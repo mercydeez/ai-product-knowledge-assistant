@@ -12,26 +12,52 @@ Build a production-minded Python project that will later support:
 - question answering over product data
 
 This phase only prepares the project structure, configuration, and sample dataset.
+Phase 2 adds a FastAPI backend around the same local retrieval and Ollama pipeline.
 
 ## Project Structure
 
 ```text
 ai-product-assistant/
 ├── data/
+│   ├── product_chunks.json
+│   ├── product_embeddings.json
 │   └── products.json
 ├── src/
 │   ├── __init__.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── app.py
+│   │   ├── routes.py
+│   │   └── schemas.py
 │   ├── config.py
+│   ├── embeddings/
+│   ├── llm/
 │   ├── main.py
+│   ├── preprocessing/
+│   ├── retrieval/
+│   ├── services/
 │   └── utils/
-│       ├── __init__.py
-│       └── data_loader.py
 ├── tests/
 │   └── test_data_loader.py
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
 └── README.md
+```
+
+## API Run
+
+Start the API server:
+
+```bash
+uvicorn src.api.app:app --reload
+```
+
+Test the endpoint in PowerShell:
+
+```powershell
+$body = @{ question = "I need a breathable cotton shirt for everyday use." } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/ask" -Method Post -ContentType "application/json" -Body $body
 ```
 
 ## Setup Instructions
@@ -126,10 +152,13 @@ What this project does now:
 - creates local embeddings
 - runs FAISS similarity search
 - generates a grounded final answer through Ollama
+- exposes the pipeline through a FastAPI backend
 
 What this project does not do yet:
 
-- no FastAPI
+- no database
+- no authentication
+- no frontend
 
 ## Why This Structure
 

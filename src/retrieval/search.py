@@ -3,17 +3,11 @@
 import numpy as np
 
 
-def embed_query(query: str, model_name: str) -> np.ndarray:
-    """Convert a user query string into an embedding vector."""
+def embed_query_with_model(query: str, model) -> np.ndarray:
+    """Convert a user query string into an embedding vector with a loaded model."""
     if not query or not query.strip():
         raise ValueError("Query cannot be empty.")
 
-    try:
-        from src.embeddings.embedder import load_embedding_model
-    except ImportError:
-        from embeddings.embedder import load_embedding_model
-
-    model = load_embedding_model(model_name)
     query_vector = model.encode(
         [query],
         show_progress_bar=False,
@@ -21,6 +15,17 @@ def embed_query(query: str, model_name: str) -> np.ndarray:
     )[0]
 
     return np.array(query_vector, dtype="float32")
+
+
+def embed_query(query: str, model_name: str) -> np.ndarray:
+    """Convert a user query string into an embedding vector."""
+    try:
+        from src.embeddings.embedder import load_embedding_model
+    except ImportError:
+        from embeddings.embedder import load_embedding_model
+
+    model = load_embedding_model(model_name)
+    return embed_query_with_model(query=query, model=model)
 
 
 def search_faiss_index(
@@ -69,9 +74,14 @@ def search_similar_chunks(
     embedded_records: list[dict],
     model_name: str,
     top_k: int = 3,
+    model_instance=None,
 ) -> list[dict]:
     """Embed the query and search for the most similar product chunks."""
-    query_vector = embed_query(query=query, model_name=model_name)
+    if model_instance is None:
+        query_vector = embed_query(query=query, model_name=model_name)
+    else:
+        query_vector = embed_query_with_model(query=query, model=model_instance)
+
     return search_faiss_index(
         index=index,
         embedded_records=embedded_records,
