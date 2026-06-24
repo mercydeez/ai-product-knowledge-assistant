@@ -1,5 +1,7 @@
 # AI Product Knowledge Assistant
 
+[![CI](https://github.com/mercydeez/ai-product-knowledge-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/mercydeez/ai-product-knowledge-assistant/actions/workflows/ci.yml)
+
 **Live demo:** [ai-product-knowledge-assistant.vercel.app](https://ai-product-knowledge-assistant.vercel.app) (backend: [ai-product-knowledge-assistant-api.onrender.com](https://ai-product-knowledge-assistant-api.onrender.com) — free tier, may take ~30-60s to wake up if idle).
 
 A fashion and e-commerce product knowledge assistant: a no-LangChain Retrieval-Augmented Generation (RAG) pipeline (sentence-transformers + ChromaDB + Groq) behind a FastAPI backend, with a Next.js frontend.
@@ -196,6 +198,25 @@ Luna Everyday Cotton Shirt
 ```bash
 python -m unittest discover -s tests
 ```
+
+### 7. Lint
+
+```bash
+pip install -r requirements-dev.txt   # installs ruff
+ruff check .
+```
+
+### 8. Evaluate retrieval quality
+
+A small retrieval-only eval (no LLM call, no `GROQ_API_KEY` needed) reports hit-rate@k and MRR over a hand-built question set in `scripts/evaluate_rag.py`:
+
+```bash
+python scripts/evaluate_rag.py
+```
+
+Exits non-zero if hit-rate drops below `--min-hit-rate` (default `0.8`) — useful as a regression check after changing the embedding model, chunking, or product data.
+
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs backend lint + tests and frontend lint + build on every push/PR to `main`.
 
 ## Current Scope
 

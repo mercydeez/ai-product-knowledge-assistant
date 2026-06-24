@@ -6,9 +6,9 @@ try:
     from src.config import (
         CHROMA_COLLECTION_NAME,
         CHROMA_PERSIST_PATH,
-        CHUNKS_OUTPUT_PATH,
         CHUNK_OVERLAP,
         CHUNK_SIZE,
+        CHUNKS_OUTPUT_PATH,
         DATA_PATH,
         EMBEDDING_BATCH_SIZE,
         EMBEDDING_MODEL,
@@ -21,8 +21,8 @@ try:
         TOP_K_RESULTS,
     )
     from src.embeddings.embedder import generate_embeddings_for_chunks, load_embedding_model
-    from src.llm.provider import generate_answer
     from src.llm.prompt_builder import build_rag_prompt
+    from src.llm.provider import generate_answer
     from src.preprocessing.chunker import create_product_chunks
     from src.preprocessing.formatter import format_products_as_documents
     from src.retrieval.indexer import build_chroma_collection
@@ -32,9 +32,9 @@ except ImportError:
     from config import (
         CHROMA_COLLECTION_NAME,
         CHROMA_PERSIST_PATH,
-        CHUNKS_OUTPUT_PATH,
         CHUNK_OVERLAP,
         CHUNK_SIZE,
+        CHUNKS_OUTPUT_PATH,
         DATA_PATH,
         EMBEDDING_BATCH_SIZE,
         EMBEDDING_MODEL,
@@ -47,8 +47,8 @@ except ImportError:
         TOP_K_RESULTS,
     )
     from embeddings.embedder import generate_embeddings_for_chunks, load_embedding_model
-    from llm.provider import generate_answer
     from llm.prompt_builder import build_rag_prompt
+    from llm.provider import generate_answer
     from preprocessing.chunker import create_product_chunks
     from preprocessing.formatter import format_products_as_documents
     from retrieval.indexer import build_chroma_collection
