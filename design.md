@@ -95,10 +95,10 @@ Work top-to-bottom. Each phase is independently shippable.
 - `retrieval/search.py`'s `search_similar_chunks()` now queries the collection (`collection.query(...)`) instead of a FAISS index; `score = 1 - distance` keeps the same 0..1 "higher is better" semantics. The `sources` shape (rank/score/chunk_id/product_id/product_name/text) is unchanged.
 - Ingestion seeds the collection on startup only if empty (`collection.count() == 0`), mirroring the existing lazy-artifact behavior for the chunk/embedding JSON files.
 
-**Phase C — API hardening for a public frontend**
-- Add CORS middleware (allow the Vercel domain + localhost).
-- Add structured logging (use existing `LOG_LEVEL`) and request timing.
-- Confirm the `/ask` and `/health` contract (Section 5) is stable — the UI depends on it.
+**Phase C — API hardening for a public frontend** ✅ implemented
+- CORS middleware (allow the Vercel domain + localhost) — added in Phase E.
+- Structured logging + request timing: `src/api/app.py` configures `logging.basicConfig(level=LOG_LEVEL, ...)` and a `@app.middleware("http")` hook that logs `method=... path=... status=... duration_ms=...` for every request and also sets an `X-Process-Time-Ms` response header. Verified against the live pipeline (real Groq call) and the mocked-service unit tests.
+- The `/ask` and `/health` contract (Section 5) is unchanged and stable.
 
 **Phase D — Frontend (Next.js)** ✅ implemented
 - Built from the Claude Design prototype "Product Knowledge Assistant.dc.html" (Section 6 brief), imported via the `claude_design` MCP connector.
