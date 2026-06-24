@@ -7,10 +7,18 @@ type SuccessViewProps = {
 };
 
 export default function SuccessView({ result }: SuccessViewProps) {
+  const hasSources = result.sources.length > 0;
+
   return (
-    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.2fr_1fr]">
+    <div
+      className={
+        hasSources
+          ? "grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.2fr_1fr]"
+          : "mx-auto w-full max-w-[640px]"
+      }
+    >
       <AnswerCard answer={result.answer} sources={result.sources} />
-      <SourcesList sources={result.sources} />
+      {hasSources && <SourcesList sources={result.sources} />}
     </div>
   );
 }

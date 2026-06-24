@@ -1,4 +1,4 @@
-import { CheckIcon } from "./icons";
+import { AlertTriangleIcon, CheckIcon } from "./icons";
 import type { Source } from "@/lib/types";
 
 type AnswerCardProps = {
@@ -25,10 +25,17 @@ export default function AnswerCard({ answer, sources }: AnswerCardProps) {
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-2">
           Answer
         </span>
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-accent-soft px-[11px] py-[5px] text-xs font-semibold text-accent-strong">
-          <CheckIcon />
-          Grounded in {sources.length} sources
-        </span>
+        {sources.length > 0 ? (
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-accent-soft px-[11px] py-[5px] text-xs font-semibold text-accent-strong">
+            <CheckIcon />
+            Grounded in {sources.length} sources
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-line-faint px-[11px] py-[5px] text-xs font-semibold text-muted">
+            <AlertTriangleIcon className="h-3 w-3" />
+            Outside catalog scope
+          </span>
+        )}
       </div>
 
       <div className="text-[17.5px] leading-relaxed text-ink/90">

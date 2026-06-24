@@ -16,6 +16,7 @@ try:
         GROQ_API_KEY,
         GROQ_MODEL,
         LLM_PROVIDER,
+        MIN_RELEVANCE_SCORE,
         OLLAMA_HOST,
         OLLAMA_MODEL,
         TOP_K_RESULTS,
@@ -42,6 +43,7 @@ except ImportError:
         GROQ_API_KEY,
         GROQ_MODEL,
         LLM_PROVIDER,
+        MIN_RELEVANCE_SCORE,
         OLLAMA_HOST,
         OLLAMA_MODEL,
         TOP_K_RESULTS,
@@ -54,6 +56,12 @@ except ImportError:
     from retrieval.indexer import build_chroma_collection
     from retrieval.search import search_similar_chunks
     from utils.data_loader import load_json, save_json
+
+
+OFF_TOPIC_MESSAGE = (
+    "I can only help with questions about our clothing catalog. "
+    'Try asking about a product, like "a breathable cotton shirt" or "black slim-fit jeans."'
+)
 
 
 class ProductRAGService:
@@ -76,6 +84,7 @@ class ProductRAGService:
         top_k_results: int = TOP_K_RESULTS,
         chunk_size: int = CHUNK_SIZE,
         chunk_overlap: int = CHUNK_OVERLAP,
+        min_relevance_score: float = MIN_RELEVANCE_SCORE,
     ) -> None:
         self.data_path = data_path
         self.chunks_output_path = chunks_output_path
@@ -92,6 +101,7 @@ class ProductRAGService:
         self.top_k_results = top_k_results
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
+        self.min_relevance_score = min_relevance_score
 
         self.collection = None
         self.records: list[dict] = []
@@ -175,6 +185,16 @@ class ProductRAGService:
     def answer_question(self, question: str, top_k: int | None = None) -> dict:
         """Run retrieval and grounded answer generation for one question."""
         sources = self.retrieve_sources(question=question, top_k=top_k)
+
+        # No chunk is a good enough match for this question to be about the
+        # catalog at all — decline without spending an LLM call on it.
+        if not sources or sources[0]["score"] < self.min_relevance_score:
+            return {
+                "question": question,
+                "answer": OFF_TOPIC_MESSAGE,
+                "sources": [],
+            }
+
         prompt = build_rag_prompt(query=question, retrieved_chunks=sources)
         answer = generate_answer(
             prompt=prompt,
