@@ -97,8 +97,8 @@ Free tier note: the service spins down after 15 minutes idle, so the first reque
 
 1. In the Vercel dashboard: **Add New → Project**, import this GitHub repo.
 2. Set **Root Directory** to `frontend` — Next.js is auto-detected.
-3. Add an environment variable: `NEXT_PUBLIC_API_BASE_URL` = the Render URL from above.
-4. Deploy, then copy the resulting URL (e.g. `https://ai-product-knowledge-assistant.vercel.app`).
+3. Add an environment variable: `NEXT_PUBLIC_API_BASE_URL` = the Render URL from above, **with no trailing slash** (a trailing slash turns every request into a double-slash path like `//ask`, which 404s and shows up as "API unreachable" in the UI).
+4. Deploy, then copy the resulting URL (e.g. `https://ai-product-knowledge-assistant.vercel.app`). If you edit this env var later, you must trigger a new deployment — `NEXT_PUBLIC_*` vars are inlined at build time, so editing the value alone doesn't affect an already-built deployment.
 
 ### Close the loop (CORS)
 
