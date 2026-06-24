@@ -1,6 +1,8 @@
 # AI Product Knowledge Assistant
 
-Phase 1 foundation for a fashion and e-commerce product knowledge assistant. This setup is intentionally simple, modular, and ready for a future Retrieval-Augmented Generation (RAG) workflow without using LangChain.
+**Live demo:** [ai-product-knowledge-assistant.vercel.app](https://ai-product-knowledge-assistant.vercel.app) (backend: [ai-product-knowledge-assistant-api.onrender.com](https://ai-product-knowledge-assistant-api.onrender.com) — free tier, may take ~30-60s to wake up if idle).
+
+A fashion and e-commerce product knowledge assistant: a no-LangChain Retrieval-Augmented Generation (RAG) pipeline (sentence-transformers + ChromaDB + Groq) behind a FastAPI backend, with a Next.js frontend.
 
 ## Project Goal
 
@@ -100,7 +102,7 @@ Free tier note: the service spins down after 15 minutes idle, so the first reque
 
 ### Close the loop (CORS)
 
-5. Back in Render, edit the backend service's `CORS_ORIGINS` env var to include the Vercel URL, e.g. `https://ai-product-knowledge-assistant.vercel.app,http://localhost:3000`. Saving triggers an automatic redeploy.
+5. Back in Render, edit the backend service's `CORS_ORIGINS` env var to include the Vercel URL, e.g. `https://ai-product-knowledge-assistant.vercel.app,http://localhost:3000`. Saving triggers an automatic redeploy. (Editing it directly in the dashboard's Environment tab is the reliable way to do this — a `git push` updating the same value in `render.yaml` did not auto-trigger a Blueprint sync for us.)
 6. Open the Vercel URL and ask a question to confirm the full stack works live.
 
 ### Running the backend container locally
