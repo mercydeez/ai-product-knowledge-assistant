@@ -15,6 +15,7 @@ try:
         EMBEDDINGS_OUTPUT_PATH,
         GROQ_API_KEY,
         GROQ_MODEL,
+        GROQ_TEMPERATURE,
         LLM_PROVIDER,
         MIN_RELEVANCE_SCORE,
         OLLAMA_HOST,
@@ -42,6 +43,7 @@ except ImportError:
         EMBEDDINGS_OUTPUT_PATH,
         GROQ_API_KEY,
         GROQ_MODEL,
+        GROQ_TEMPERATURE,
         LLM_PROVIDER,
         MIN_RELEVANCE_SCORE,
         OLLAMA_HOST,
@@ -81,6 +83,7 @@ class ProductRAGService:
         ollama_model: str = OLLAMA_MODEL,
         groq_api_key: str = GROQ_API_KEY,
         groq_model: str = GROQ_MODEL,
+        groq_temperature: float = GROQ_TEMPERATURE,
         top_k_results: int = TOP_K_RESULTS,
         chunk_size: int = CHUNK_SIZE,
         chunk_overlap: int = CHUNK_OVERLAP,
@@ -98,6 +101,7 @@ class ProductRAGService:
         self.ollama_model = ollama_model
         self.groq_api_key = groq_api_key
         self.groq_model = groq_model
+        self.groq_temperature = groq_temperature
         self.top_k_results = top_k_results
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
@@ -203,6 +207,7 @@ class ProductRAGService:
             ollama_model=self.ollama_model,
             groq_api_key=self.groq_api_key,
             groq_model=self.groq_model,
+            groq_temperature=self.groq_temperature,
         )
 
         return {

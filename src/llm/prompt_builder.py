@@ -14,6 +14,8 @@ def format_retrieved_chunks(results: list[dict]) -> str:
                     f"Chunk ID: {result['chunk_id']}",
                     f"Product ID: {result['product_id']}",
                     f"Product Name: {result['product_name']}",
+                    f"Category: {result['category']}",
+                    f"Color: {result['color']}",
                     f"Text: {result['text']}",
                 ]
             )
@@ -30,7 +32,14 @@ def build_rag_prompt(query: str, retrieved_chunks: list[dict]) -> str:
 answer questions about the products in this catalog — never general knowledge,
 coding, math, or any other topic unrelated to the catalog, even if asked directly.
 
-Answer the user's question using only the retrieved context below.
+Answer the user's question using only facts explicitly stated in the retrieved
+context below. Do not infer, guess, or imply that a product satisfies a use
+case, occasion, or property the context does not explicitly mention — for
+example, if the user asks for something the catalog does not carry (e.g. "a
+night dress" when the context only describes day dresses), say plainly that
+the catalog does not have that exact item, then offer the closest retrieved
+products as alternatives rather than claiming they meet the request.
+
 If the answer is not clearly present in the context, or the question is not
 about a catalog product, say:
 "I do not have enough information in the retrieved context to answer that."

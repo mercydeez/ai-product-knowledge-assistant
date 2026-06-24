@@ -15,10 +15,11 @@ def generate_answer(
     ollama_model: str,
     groq_api_key: str,
     groq_model: str,
+    groq_temperature: float = 0.2,
 ) -> str:
     """Generate an answer using the configured LLM provider."""
     if provider == "groq":
-        return call_groq(prompt=prompt, model=groq_model, api_key=groq_api_key)
+        return call_groq(prompt=prompt, model=groq_model, api_key=groq_api_key, temperature=groq_temperature)
 
     if provider == "ollama":
         return call_ollama(prompt=prompt, model=ollama_model, host=ollama_host)

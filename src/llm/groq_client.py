@@ -1,7 +1,7 @@
 """Helpers for calling the Groq hosted LLM API."""
 
 
-def call_groq(prompt: str, model: str, api_key: str) -> str:
+def call_groq(prompt: str, model: str, api_key: str, temperature: float = 0.2) -> str:
     """Send a prompt to Groq's chat completions API and return the generated answer text."""
     if not api_key:
         raise RuntimeError(
@@ -20,6 +20,7 @@ def call_groq(prompt: str, model: str, api_key: str) -> str:
         response = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
         )
     except Exception as exc:
         raise RuntimeError(f"Groq request failed: {exc}") from exc
