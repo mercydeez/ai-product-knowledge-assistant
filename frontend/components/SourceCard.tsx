@@ -1,3 +1,4 @@
+import { CATEGORY_ICONS } from "./icons";
 import { colorToHex, luminance } from "@/lib/chunk";
 import type { Source } from "@/lib/types";
 
@@ -12,6 +13,7 @@ export default function SourceCard({ source }: SourceCardProps) {
   const swatchBorder =
     luminance(swatchHex) > 0.78 ? "1px solid rgba(0,0,0,0.10)" : "none";
   const pct = Math.round(Math.max(0, Math.min(1, source.score)) * 100);
+  const CategoryIcon = CATEGORY_ICONS[source.category];
 
   return (
     <div className="rounded-2xl border border-line-soft bg-card p-[18px]">
@@ -24,7 +26,11 @@ export default function SourceCard({ source }: SourceCardProps) {
             border: swatchBorder,
           }}
         >
-          {source.product_name.charAt(0)}
+          {CategoryIcon ? (
+            <CategoryIcon className="h-7 w-7" />
+          ) : (
+            source.product_name.charAt(0)
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">

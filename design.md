@@ -119,7 +119,7 @@ Work top-to-bottom. Each phase is independently shippable.
 
 **Phase F — Quality signals** ✅ implemented
 - Expand tests (retrieval + API layer). ✅ — `tests/test_retrieval.py` (ChromaDB seeding/idempotency/ranking against a fake embedding model) and `tests/test_api.py` (FastAPI routes against a mocked `ProductRAGService`, covering 200/400/422/500 paths). See `requirements-dev.txt` for the one test-only dependency.
-- RAG evaluation script (hit-rate / MRR over a small question set). ✅ — `scripts/evaluate_rag.py` runs retrieval only (no LLM call, no `GROQ_API_KEY` needed) over a 12-question set covering every product, and prints hit-rate@k + MRR. Verified live: 100% hit-rate, MRR 1.0 at `top_k=3` against the real embedding model + ChromaDB collection. Exits non-zero below `--min-hit-rate` (default 0.8) so it can gate a deploy.
+- RAG evaluation script (hit-rate / MRR over a small question set). ✅ — `scripts/evaluate_rag.py` runs retrieval only (no LLM call, no `GROQ_API_KEY` needed) over a 24-question set covering every product, and prints hit-rate@k + MRR. Verified live: 100% hit-rate, MRR 1.0 at `top_k=3` against the real embedding model + ChromaDB collection. Exits non-zero below `--min-hit-rate` (default 0.8) so it can gate a deploy.
 - GitHub Actions workflow (lint + tests). ✅ — `.github/workflows/ci.yml` has a `backend` job (installs CPU-only torch, `ruff check .`, `python -m unittest discover -s tests`) and a `frontend` job (`npm ci`, `npm run lint`, `npm run build`), both on push/PR to `main`. Linting uses `ruff` (added to `requirements-dev.txt`, configured in `pyproject.toml`); fixed the two pre-existing unsorted-import findings it surfaced in `config.py`/`rag_service.py`.
 
 ---

@@ -36,6 +36,18 @@ EVAL_QUESTIONS = [
     _case("Recommend a water-resistant forest green hooded jacket for hiking.", "SKU-1010"),
     _case("I need a relaxed-fit heather grey graphic t-shirt for weekends.", "SKU-1011"),
     _case("Show me a flowing dusty rose pleated midi skirt.", "SKU-1012"),
+    _case("I want a relaxed chambray shirt with roll-up sleeves for the weekend.", "SKU-1013"),
+    _case("Show me a ribbed tank top for layering in warm weather.", "SKU-1014"),
+    _case("I need flowing wide-leg palazzo pants with a high-rise waist.", "SKU-1015"),
+    _case("Looking for tailored chino shorts with a bit of stretch.", "SKU-1016"),
+    _case("Recommend a mustard wrap dress with three-quarter sleeves.", "SKU-1017"),
+    _case("Show me a sleeveless shift dress for easy day-to-evening wear.", "SKU-1018"),
+    _case("I want a lightweight quilted puffer vest for extra warmth.", "SKU-1019"),
+    _case("Looking for a classic washed denim jacket with chest pockets.", "SKU-1020"),
+    _case("I need a fitted sage turtleneck pullover to layer under jackets.", "SKU-1021"),
+    _case("Show me an oversized chunky knit sweater for cold weather.", "SKU-1022"),
+    _case("Recommend a mustard A-line denim skirt with a button-front placket.", "SKU-1023"),
+    _case("I want a flirty pleated mini skirt with a chiffon overlay.", "SKU-1024"),
 ]
 
 

@@ -187,7 +187,7 @@ python src/main.py
 Expected output:
 
 ```text
-Loaded 12 products
+Loaded 24 products
 
 First product:
 Luna Everyday Cotton Shirt

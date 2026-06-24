@@ -11,6 +11,8 @@ const COLOR_HEX: Record<string, string> = {
   "forest green": "#2b432f",
   "heather grey": "#b6b4ad",
   "dusty rose": "#c99aa0",
+  mustard: "#c9a227",
+  sage: "#8a9b7e",
 };
 
 const DEFAULT_SWATCH = "#cfc8bb";

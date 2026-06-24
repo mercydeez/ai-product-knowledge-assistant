@@ -51,3 +51,120 @@ export function AlertTriangleIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+export function TopIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M8 3C8 3 9.5 5 12 5C14.5 5 16 3 16 3L21 7L18 10L17 9L17 21L7 21L7 9L6 10L3 7Z" />
+    </svg>
+  );
+}
+
+export function BottomIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M6 4L18 4L18 7L16.5 21L13 21L12 9L11 9L10.5 21L7 21L6 7Z" />
+    </svg>
+  );
+}
+
+export function DressIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M9 3L15 3L16 11L20 21L4 21L8 11Z" />
+    </svg>
+  );
+}
+
+export function OuterwearIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M7 3L10 6L14 6L17 3L21 8L18 11L18 21L6 21L6 11L3 8ZM12 6L12 20" />
+    </svg>
+  );
+}
+
+export function KnitwearIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M8 4Q12 7 16 4L21 8L18 10L18 21L6 21L6 10L3 8Z" />
+    </svg>
+  );
+}
+
+export function SkirtIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M9 4L15 4L19 19L5 19Z" />
+    </svg>
+  );
+}
+
+export const CATEGORY_ICONS: Record<string, typeof TopIcon> = {
+  Tops: TopIcon,
+  Bottoms: BottomIcon,
+  Dresses: DressIcon,
+  Outerwear: OuterwearIcon,
+  Knitwear: KnitwearIcon,
+  Skirts: SkirtIcon,
+};
