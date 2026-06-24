@@ -1,4 +1,4 @@
-"""Helpers for semantic similarity search on a FAISS index."""
+"""Helpers for semantic similarity search against a ChromaDB collection."""
 
 import numpy as np
 
@@ -28,40 +28,37 @@ def embed_query(query: str, model_name: str) -> np.ndarray:
     return embed_query_with_model(query=query, model=model)
 
 
-def search_faiss_index(
-    index,
-    embedded_records: list[dict],
+def search_chroma_collection(
+    collection,
     query_vector: np.ndarray,
     top_k: int = 3,
 ) -> list[dict]:
-    """Search a FAISS index and return top_k results with metadata."""
+    """Query a ChromaDB collection and return top_k results with metadata."""
     if top_k <= 0:
         raise ValueError("top_k must be greater than 0.")
 
-    try:
-        import faiss
-    except ImportError as exc:
-        raise ImportError("faiss-cpu is not installed. Run: pip install -r requirements.txt") from exc
+    result = collection.query(
+        query_embeddings=[query_vector.tolist()],
+        n_results=top_k,
+        include=["documents", "metadatas", "distances"],
+    )
 
-    query_matrix = np.array([query_vector], dtype="float32")
-    faiss.normalize_L2(query_matrix)
-
-    scores, indices = index.search(query_matrix, top_k)
     results = []
 
-    for rank, (score, record_index) in enumerate(zip(scores[0], indices[0]), start=1):
-        if record_index < 0:
-            continue
-
-        record = embedded_records[int(record_index)]
+    for rank, (chunk_id, text, metadata, distance) in enumerate(
+        zip(result["ids"][0], result["documents"][0], result["metadatas"][0], result["distances"][0]),
+        start=1,
+    ):
         results.append(
             {
                 "rank": rank,
-                "score": float(score),
-                "chunk_id": record["chunk_id"],
-                "product_id": record["product_id"],
-                "product_name": record["product_name"],
-                "text": record["text"],
+                # Cosine space distances are 1 - cosine_similarity, so undo that
+                # to keep the same 0..1 "higher is better" score the API returns.
+                "score": 1.0 - float(distance),
+                "chunk_id": chunk_id,
+                "product_id": metadata["product_id"],
+                "product_name": metadata["product_name"],
+                "text": text,
             }
         )
 
@@ -70,8 +67,7 @@ def search_faiss_index(
 
 def search_similar_chunks(
     query: str,
-    index,
-    embedded_records: list[dict],
+    collection,
     model_name: str,
     top_k: int = 3,
     model_instance=None,
@@ -82,9 +78,8 @@ def search_similar_chunks(
     else:
         query_vector = embed_query_with_model(query=query, model=model_instance)
 
-    return search_faiss_index(
-        index=index,
-        embedded_records=embedded_records,
+    return search_chroma_collection(
+        collection=collection,
         query_vector=query_vector,
         top_k=top_k,
     )

@@ -1,4 +1,4 @@
-faiss-cpu==1.13.2
+chromadb==1.5.5
 fastapi==0.109.0
 groq==0.37.1
 numpy==2.2.3

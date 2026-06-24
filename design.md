@@ -90,10 +90,10 @@ Work top-to-bottom. Each phase is independently shippable.
 - `LLM_PROVIDER` (default `groq`), `GROQ_API_KEY`, `GROQ_MODEL` (default `llama-3.3-70b-versatile`) added to `config.py` and `.env.example`. Set `LLM_PROVIDER=ollama` to fall back to local Ollama.
 - A missing `GROQ_API_KEY` raises a friendly `RuntimeError` pointing to `https://console.groq.com/keys`, surfaced through `/ask` as a 500 with that `detail` message — verified end-to-end against the live API.
 
-**Phase B — ChromaDB vector store**
-- Replace `retrieval/indexer.py` (FAISS) with a ChromaDB persistent collection.
-- Update `retrieval/search.py` to query ChromaDB; keep the same `sources` shape (rank/score/chunk_id/product_id/product_name/text).
-- Ingestion seeds the collection on startup if empty (mirrors current lazy-artifact behavior).
+**Phase B — ChromaDB vector store** ✅ implemented
+- `retrieval/indexer.py`'s `build_chroma_collection()` replaces the FAISS `IndexFlatIP` builder with a `chromadb.PersistentClient` collection (cosine space) persisted under `data/chroma_db/` (gitignored — regenerated from `data/product_embeddings.json`).
+- `retrieval/search.py`'s `search_similar_chunks()` now queries the collection (`collection.query(...)`) instead of a FAISS index; `score = 1 - distance` keeps the same 0..1 "higher is better" semantics. The `sources` shape (rank/score/chunk_id/product_id/product_name/text) is unchanged.
+- Ingestion seeds the collection on startup only if empty (`collection.count() == 0`), mirroring the existing lazy-artifact behavior for the chunk/embedding JSON files.
 
 **Phase C — API hardening for a public frontend**
 - Add CORS middleware (allow the Vercel domain + localhost).
