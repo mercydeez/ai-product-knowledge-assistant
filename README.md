@@ -39,6 +39,11 @@ ai-product-assistant/
 │   └── utils/
 ├── tests/
 │   └── test_data_loader.py
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   └── package.json
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
@@ -59,6 +64,19 @@ Test the endpoint in PowerShell:
 $body = @{ question = "I need a breathable cotton shirt for everyday use." } | ConvertTo-Json
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/ask" -Method Post -ContentType "application/json" -Body $body
 ```
+
+## Frontend
+
+A Next.js (App Router, TypeScript, Tailwind) UI lives in `frontend/`. It calls the FastAPI `/ask` endpoint and renders the grounded answer alongside the retrieved source chunks.
+
+```bash
+cd frontend
+npm install
+cp .env.local.example .env.local
+npm run dev
+```
+
+Open `http://localhost:3000`. The backend must be running (see above) and `CORS_ORIGINS` in `.env` must include `http://localhost:3000` (it does by default).
 
 ## Setup Instructions
 
@@ -115,11 +133,14 @@ Then update the values if needed:
 
 ```env
 EMBEDDING_MODEL=all-MiniLM-L6-v2
-OLLAMA_MODEL=llama3.2:3b
+LLM_PROVIDER=groq
+GROQ_API_KEY=your-key-here
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
 Note: the first run will download the embedding model from Hugging Face. Internet access is needed once, then it is cached locally.
-For the final answer-generation step, start Ollama locally and pull a model such as `llama3.2:3b`.
+
+For the final answer-generation step, the default provider is **Groq** (hosted, free tier) — get a key at https://console.groq.com/keys and set `GROQ_API_KEY` in `.env`. To use a local model instead, set `LLM_PROVIDER=ollama` and start Ollama locally with a pulled model such as `llama3.2:3b`.
 
 ### 5. Run the project
 
@@ -153,6 +174,7 @@ What this project does now:
 - runs FAISS similarity search
 - generates a grounded final answer through Ollama
 - exposes the pipeline through a FastAPI backend
+- ships a Next.js frontend for asking questions and viewing cited sources
 
 What this project does not do yet:
 

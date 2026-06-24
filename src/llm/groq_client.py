@@ -1,0 +1,32 @@
+"""Helpers for calling the Groq hosted LLM API."""
+
+
+def call_groq(prompt: str, model: str, api_key: str) -> str:
+    """Send a prompt to Groq's chat completions API and return the generated answer text."""
+    if not api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY is not set. Add it to your .env file. "
+            "Get a free key at https://console.groq.com/keys"
+        )
+
+    try:
+        from groq import Groq
+    except ImportError as exc:
+        raise ImportError("groq is not installed. Run: pip install -r requirements.txt") from exc
+
+    client = Groq(api_key=api_key)
+
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except Exception as exc:
+        raise RuntimeError(f"Groq request failed: {exc}") from exc
+
+    answer = (response.choices[0].message.content or "").strip()
+
+    if not answer:
+        raise RuntimeError("Groq returned an empty response.")
+
+    return answer

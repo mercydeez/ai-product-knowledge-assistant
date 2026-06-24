@@ -84,10 +84,11 @@ data/products.json
 
 Work top-to-bottom. Each phase is independently shippable.
 
-**Phase A — Groq LLM provider**
-- Add a Groq client (`src/llm/groq_client.py`) using the `groq` SDK.
-- Introduce an `LLM_PROVIDER` env var (`groq` | `ollama`) and route through a small selector so the service stays provider-agnostic.
-- Add `GROQ_API_KEY`, `GROQ_MODEL` to config and `.env.example`.
+**Phase A — Groq LLM provider** ✅ implemented
+- `src/llm/groq_client.py` calls Groq's chat completions API via the `groq` SDK (already pinned in `requirements.txt`).
+- `src/llm/provider.py` is the selector — `generate_answer(prompt, provider, ...)` dispatches to `call_groq` or `call_ollama`. `ProductRAGService` calls it instead of `call_ollama` directly, so it stays provider-agnostic.
+- `LLM_PROVIDER` (default `groq`), `GROQ_API_KEY`, `GROQ_MODEL` (default `llama-3.3-70b-versatile`) added to `config.py` and `.env.example`. Set `LLM_PROVIDER=ollama` to fall back to local Ollama.
+- A missing `GROQ_API_KEY` raises a friendly `RuntimeError` pointing to `https://console.groq.com/keys`, surfaced through `/ask` as a 500 with that `detail` message — verified end-to-end against the live API.
 
 **Phase B — ChromaDB vector store**
 - Replace `retrieval/indexer.py` (FAISS) with a ChromaDB persistent collection.
@@ -99,9 +100,12 @@ Work top-to-bottom. Each phase is independently shippable.
 - Add structured logging (use existing `LOG_LEVEL`) and request timing.
 - Confirm the `/ask` and `/health` contract (Section 5) is stable — the UI depends on it.
 
-**Phase D — Frontend (Next.js)** ← *Claude Design produces this*
-- Generate UI from the brief in Section 6.
-- Wire it to the backend via `NEXT_PUBLIC_API_BASE_URL`.
+**Phase D — Frontend (Next.js)** ✅ implemented
+- Built from the Claude Design prototype "Product Knowledge Assistant.dc.html" (Section 6 brief), imported via the `claude_design` MCP connector.
+- Scaffolded with `create-next-app` → Next.js 16, React 19, TypeScript, Tailwind CSS v4 (CSS-first `@theme` tokens) under `frontend/`.
+- The design's mocked client-side retrieval (`tokenize`/`scoreProduct`/`retrieve`/fixed `setTimeout` steps) was replaced with a real typed client (`frontend/lib/api.ts`) calling `POST /ask`, and a real `/health` poll for the "API connected" badge.
+- `category`/`color` were added to the `/ask` response (`SourceItem`, populated from the product record in `ProductRAGService.retrieve_sources`) after testing showed a single chunk often doesn't contain those fields (chunker.py splits each product into multiple line-windows) — text-parsing them client-side was unreliable. `frontend/lib/chunk.ts` only does `colorToHex`/`luminance` now (color-name → swatch hex).
+- Wired to the backend via `NEXT_PUBLIC_API_BASE_URL` (`frontend/.env.local.example`).
 
 **Phase E — Containerize + deploy**
 - Dockerfile for the backend; deploy to Render / HF Spaces.
@@ -140,6 +144,8 @@ Response:
       "chunk_id": "SKU-1001_chunk_1",
       "product_id": "SKU-1001",
       "product_name": "Luna Everyday Cotton Shirt",
+      "category": "Tops",
+      "color": "White",
       "text": "Product Name: Luna Everyday Cotton Shirt\nCategory: Tops\n..."
     }
   ]
