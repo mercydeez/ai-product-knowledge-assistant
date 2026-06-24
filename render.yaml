@@ -21,6 +21,5 @@ services:
         value: "4"
       - key: CHUNK_OVERLAP
         value: "1"
-      # Update after the frontend is deployed to Vercel, then redeploy.
       - key: CORS_ORIGINS
-        value: http://localhost:3000
+        value: https://ai-product-knowledge-assistant.vercel.app,http://localhost:3000
