@@ -107,9 +107,10 @@ Work top-to-bottom. Each phase is independently shippable.
 - `category`/`color` were added to the `/ask` response (`SourceItem`, populated from the product record in `ProductRAGService.retrieve_sources`) after testing showed a single chunk often doesn't contain those fields (chunker.py splits each product into multiple line-windows) — text-parsing them client-side was unreliable. `frontend/lib/chunk.ts` only does `colorToHex`/`luminance` now (color-name → swatch hex).
 - Wired to the backend via `NEXT_PUBLIC_API_BASE_URL` (`frontend/.env.local.example`).
 
-**Phase E — Containerize + deploy**
-- Dockerfile for the backend; deploy to Render / HF Spaces.
-- Deploy frontend to Vercel; set the API base URL env var.
+**Phase E — Containerize + deploy** — backend host decided: **Render** (see Section 7). Files ready, deploy steps documented in `README.md` § Deployment; live URLs pending the actual dashboard deploy.
+- `Dockerfile` (repo root, `python:3.12-slim`) installs the CPU-only `torch` wheel before `requirements.txt` — Render's free tier is CPU-only, and the default `pip install torch` pulls ~2GB of unused CUDA/NVIDIA dependencies. Bakes the `all-MiniLM-L6-v2` embedding model into the image at build time so a cold start (free tier spins down after 15min idle) never needs to call the Hugging Face Hub. Runs as a non-root `appuser`. Verified locally end-to-end (`docker build` + `docker run` + `/health` + `/ask`) before being wired up to Render.
+- `render.yaml` blueprint deploys the backend as a free web service; `GROQ_API_KEY` is `sync: false` (entered manually in Render's dashboard, never committed). `CORS_ORIGINS` defaults to `http://localhost:3000` and must be updated with the real Vercel URL once the frontend is deployed (see README § "Close the loop").
+- Frontend deploys to Vercel with **Root Directory** set to `frontend/` and `NEXT_PUBLIC_API_BASE_URL` set to the Render backend's public URL.
 
 **Phase F — Quality signals**
 - Expand tests (retrieval + API layer). ✅ implemented — `tests/test_retrieval.py` (ChromaDB seeding/idempotency/ranking against a fake embedding model) and `tests/test_api.py` (FastAPI routes against a mocked `ProductRAGService`, covering 200/400/422/500 paths). See `requirements-dev.txt` for the one test-only dependency.
@@ -203,5 +204,5 @@ Read the API base URL from `process.env.NEXT_PUBLIC_API_BASE_URL` (default to `h
 ## 7. Open items / decisions still to make
 
 - Final Groq model id (default `llama-3.3-70b-versatile`).
-- Backend host: Render (sleeps when idle, true backend) vs Hugging Face Spaces (ML-recognized, Docker). Decide at Phase E.
+- Backend host: **Render**, decided at Phase E (2026-06-24) — a real JSON API is a more conventional fit for a true backend host than a Spaces demo-UI convention.
 - Whether to keep multi-turn history (Phase F stretch) or stay single-shot.

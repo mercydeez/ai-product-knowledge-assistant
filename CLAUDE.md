@@ -29,6 +29,10 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/ask" -Method Post -ContentType "ap
 ```
 
 ```bash
+# Build and run the backend container locally (mirrors the Render deploy)
+docker build -t product-knowledge-assistant .
+docker run -p 8000:8000 -e GROQ_API_KEY=your-key-here product-knowledge-assistant
+
 # Run the Next.js frontend (separate terminal, requires the backend running)
 cd frontend && npm install && npm run dev   # http://localhost:3000
 
@@ -66,3 +70,5 @@ This is a no-LangChain RAG (Retrieval-Augmented Generation) pipeline over a stat
 - **`tests/test_api.py` never runs the real FastAPI `lifespan`** (which would load the embedding model and build the Chroma collection) — Starlette's `TestClient` only triggers `lifespan` when used as a context manager (`with TestClient(app)`). Tests construct it plainly and set `app.state.rag_service` to a `MagicMock()` directly, so route tests are pure and fast. Don't switch to the `with` form unless you actually want the real pipeline to run.
 - **`requirements-dev.txt` holds test-only deps** (currently just `httpx`, pinned to `0.27.2`) — `fastapi==0.109.0` pulls in `starlette==0.35.1`, whose `TestClient` still uses the `app=` shortcut that `httpx` removed in `0.28.0`; a bare `pip install httpx` will break `tests/test_api.py`.
 - **`tests/test_retrieval.py` builds throwaway ChromaDB collections in `tempfile.mkdtemp()` dirs**, not `data/chroma_db/`. Cleanup uses `shutil.rmtree(path, ignore_errors=True)` because Chroma's Rust bindings keep `chroma.sqlite3`/HNSW files open past the test on Windows — a plain `tempfile.TemporaryDirectory()` would raise `PermissionError` on `__exit__`.
+- **`Dockerfile` installs CPU-only `torch` *before* `requirements.txt`** (`pip install torch --index-url https://download.pytorch.org/whl/cpu`). Without this, `sentence-transformers` pulls plain `torch`, which defaults to the CUDA build and drags in ~2GB of unused NVIDIA wheels — wasteful (and slow to build) for Render's CPU-only free tier. If you ever bump the `torch`/`sentence-transformers` versions, keep this line ahead of the main install.
+- **Deployment is documented in `README.md` § Deployment** (Render for the backend via `render.yaml`, Vercel for `frontend/`). `GROQ_API_KEY` and `CORS_ORIGINS` are set as real environment variables in each dashboard, not baked into the image or committed anywhere.
