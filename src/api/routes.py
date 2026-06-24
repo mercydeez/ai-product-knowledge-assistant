@@ -1,6 +1,9 @@
 """API route definitions for the product knowledge assistant."""
 
+import json
+
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 
 try:
     from src.api.schemas import AskRequest, AskResponse
@@ -37,3 +40,22 @@ def ask_product_question(request: AskRequest, http_request: Request) -> AskRespo
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return AskResponse(**result)
+
+
+@router.post("/ask/stream")
+def ask_product_question_stream(request: AskRequest, http_request: Request) -> StreamingResponse:
+    """Stream a grounded answer as Server-Sent Events: sources, then tokens, then done."""
+    rag_service = get_rag_service(http_request)
+
+    def event_stream():
+        try:
+            for event in rag_service.answer_question_stream(request.question):
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as exc:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(exc)})}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

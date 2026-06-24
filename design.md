@@ -122,6 +122,11 @@ Work top-to-bottom. Each phase is independently shippable.
 - RAG evaluation script (hit-rate / MRR over a small question set). ✅ — `scripts/evaluate_rag.py` runs retrieval only (no LLM call, no `GROQ_API_KEY` needed) over a 24-question set covering every product, and prints hit-rate@k + MRR. Verified live: 100% hit-rate, MRR 1.0 at `top_k=3` against the real embedding model + ChromaDB collection. Exits non-zero below `--min-hit-rate` (default 0.8) so it can gate a deploy.
 - GitHub Actions workflow (lint + tests). ✅ — `.github/workflows/ci.yml` has a `backend` job (installs CPU-only torch, `ruff check .`, `python -m unittest discover -s tests`) and a `frontend` job (`npm ci`, `npm run lint`, `npm run build`), both on push/PR to `main`. Linting uses `ruff` (added to `requirements-dev.txt`, configured in `pyproject.toml`); fixed the two pre-existing unsorted-import findings it surfaced in `config.py`/`rag_service.py`.
 
+**Phase G — Follow-up enhancements** ✅ implemented
+- **Cross-encoder reranking** (retrieval quality): `retrieval/reranker.py` reorders a larger cosine-similarity candidate pool with a `sentence-transformers` `CrossEncoder` (`RERANK_ENABLED`/`RERANK_MODEL`/`RERANK_CANDIDATE_POOL`). The off-topic gate reads a `top_match_score` captured from the pool *before* reranking, so `MIN_RELEVANCE_SCORE`'s calibration (Phase F follow-up) is unaffected either way — verified live against the same boundary queries used to calibrate it originally. `evaluate_rag.py` hit-rate stayed 100% (MRR 0.979, down from 1.0 — one case moved from rank 1 to rank 2, still within top_k).
+- **LLM-judge answer-quality eval**: `scripts/evaluate_answers.py` generates a real answer per question and has Groq grade it 1-5 on faithfulness/relevance — complements the retrieval-only `evaluate_rag.py`. Not wired into CI (needs a real `GROQ_API_KEY`). Verified live: 4.96/5 faithfulness, 5.00/5 relevance across all 24 questions.
+- **SSE streaming** (`POST /ask/stream`, Section 5): additive endpoint, `/ask` unchanged. Surfaced and fixed a real bug along the way — Starlette's `BaseHTTPMiddleware` (`@app.middleware("http")`) fully buffers a streaming response before forwarding it, which silently broke real-time token delivery; fixed by converting the Phase C request-timing middleware to a plain ASGI middleware class. Separately, Groq's inference is fast enough (~150ms for a short answer) that raw token arrival isn't perceptible as "typing," so the frontend paces the on-screen reveal client-side while the network layer streams for real underneath — verified both with a raw timestamped chunk probe (confirms genuine incremental delivery post-fix) and live in the browser.
+
 ---
 
 ## 5. API Contract (frozen — the UI builds against this)
@@ -158,6 +163,19 @@ Response:
 }
 ```
 Errors: `400` (empty question) and `500` (pipeline failure), each `{ "detail": "<message>" }`.
+
+### `POST /ask/stream` (additive — added Phase G, `/ask` above is unchanged)
+Same request body as `/ask`. Response is `text/event-stream`, one JSON object per `data:` line:
+```text
+data: {"type": "sources", "sources": [ ...same shape as /ask's sources... ]}
+
+data: {"type": "token", "text": "The Luna "}
+
+data: {"type": "token", "text": "shirt is..."}
+
+data: {"type": "done"}
+```
+`sources` is sent once, immediately (empty array for the off-topic case, followed by one `token` event carrying the canned decline message). Errors mid-stream emit `{"type": "error", "message": "..."}` instead of an HTTP error status, since headers are already sent by the time a failure can occur.
 
 ---
 

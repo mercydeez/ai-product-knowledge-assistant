@@ -4,9 +4,10 @@ import type { AskResponse } from "@/lib/types";
 
 type SuccessViewProps = {
   result: AskResponse;
+  isStreaming?: boolean;
 };
 
-export default function SuccessView({ result }: SuccessViewProps) {
+export default function SuccessView({ result, isStreaming = false }: SuccessViewProps) {
   const hasSources = result.sources.length > 0;
 
   return (
@@ -17,7 +18,7 @@ export default function SuccessView({ result }: SuccessViewProps) {
           : "mx-auto w-full max-w-[640px]"
       }
     >
-      <AnswerCard answer={result.answer} sources={result.sources} />
+      <AnswerCard answer={result.answer} sources={result.sources} isStreaming={isStreaming} />
       {hasSources && <SourcesList sources={result.sources} />}
     </div>
   );

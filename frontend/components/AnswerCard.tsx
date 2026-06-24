@@ -4,9 +4,10 @@ import type { Source } from "@/lib/types";
 type AnswerCardProps = {
   answer: string;
   sources: Source[];
+  isStreaming?: boolean;
 };
 
-export default function AnswerCard({ answer, sources }: AnswerCardProps) {
+export default function AnswerCard({ answer, sources, isStreaming = false }: AnswerCardProps) {
   const paragraphs = answer
     .split(/\n{2,}/)
     .map((p) => p.trim())
@@ -39,9 +40,17 @@ export default function AnswerCard({ answer, sources }: AnswerCardProps) {
       </div>
 
       <div className="text-[17.5px] leading-relaxed text-ink/90">
+        {paragraphs.length === 0 && isStreaming && (
+          <p className="mb-3.5 text-pretty">
+            <span className="inline-block h-4 w-[2px] animate-pulse bg-ink/60 align-middle" />
+          </p>
+        )}
         {paragraphs.map((para, i) => (
           <p key={i} className="mb-3.5 text-pretty">
             {para}
+            {isStreaming && i === paragraphs.length - 1 && (
+              <span className="ml-1 inline-block h-4 w-[2px] animate-pulse bg-ink/60 align-middle" />
+            )}
           </p>
         ))}
       </div>

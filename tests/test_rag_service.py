@@ -82,5 +82,57 @@ class TestOffTopicGuardrail(unittest.TestCase):
         mock_generate.assert_called_once()
 
 
+class TestAnswerQuestionStream(unittest.TestCase):
+    def setUp(self) -> None:
+        self.service = ProductRAGService(min_relevance_score=0.35)
+        self.service.collection = MagicMock()
+        self.service.embedding_model = MagicMock()
+        self.service.records = [{"chunk_id": "placeholder"}]
+
+    @patch("src.services.rag_service.generate_answer_stream")
+    @patch("src.services.rag_service.build_rag_prompt")
+    def test_low_score_yields_off_topic_message_without_calling_llm(
+        self, mock_build_prompt, mock_generate_stream
+    ) -> None:
+        self.service.retrieve_sources = MagicMock(
+            return_value=[{**SOURCE, "score": 0.1, "top_match_score": 0.1}]
+        )
+
+        events = list(self.service.answer_question_stream("What is the capital of France?"))
+
+        self.assertEqual(
+            events,
+            [
+                {"type": "sources", "sources": []},
+                {"type": "token", "text": OFF_TOPIC_MESSAGE},
+                {"type": "done"},
+            ],
+        )
+        mock_build_prompt.assert_not_called()
+        mock_generate_stream.assert_not_called()
+
+    @patch("src.services.rag_service.generate_answer_stream")
+    @patch("src.services.rag_service.build_rag_prompt")
+    def test_high_score_streams_sources_then_tokens_then_done(
+        self, mock_build_prompt, mock_generate_stream
+    ) -> None:
+        sources = [{**SOURCE, "score": 0.8, "top_match_score": 0.8}]
+        self.service.retrieve_sources = MagicMock(return_value=sources)
+        mock_build_prompt.return_value = "a built prompt"
+        mock_generate_stream.return_value = iter(["The Luna ", "shirt is breathable cotton."])
+
+        events = list(self.service.answer_question_stream("a breathable cotton shirt"))
+
+        self.assertEqual(
+            events,
+            [
+                {"type": "sources", "sources": sources},
+                {"type": "token", "text": "The Luna "},
+                {"type": "token", "text": "shirt is breathable cotton."},
+                {"type": "done"},
+            ],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

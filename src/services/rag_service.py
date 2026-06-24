@@ -27,7 +27,7 @@ try:
     )
     from src.embeddings.embedder import generate_embeddings_for_chunks, load_embedding_model
     from src.llm.prompt_builder import build_rag_prompt
-    from src.llm.provider import generate_answer
+    from src.llm.provider import generate_answer, generate_answer_stream
     from src.preprocessing.chunker import create_product_chunks
     from src.preprocessing.formatter import format_products_as_documents
     from src.retrieval.indexer import build_chroma_collection
@@ -59,7 +59,7 @@ except ImportError:
     )
     from embeddings.embedder import generate_embeddings_for_chunks, load_embedding_model
     from llm.prompt_builder import build_rag_prompt
-    from llm.provider import generate_answer
+    from llm.provider import generate_answer, generate_answer_stream
     from preprocessing.chunker import create_product_chunks
     from preprocessing.formatter import format_products_as_documents
     from retrieval.indexer import build_chroma_collection
@@ -250,3 +250,29 @@ class ProductRAGService:
             "answer": answer,
             "sources": sources,
         }
+
+    def answer_question_stream(self, question: str, top_k: int | None = None):
+        """Run retrieval and stream the grounded answer as it's generated."""
+        sources = self.retrieve_sources(question=question, top_k=top_k)
+
+        if not sources or sources[0]["top_match_score"] < self.min_relevance_score:
+            yield {"type": "sources", "sources": []}
+            yield {"type": "token", "text": OFF_TOPIC_MESSAGE}
+            yield {"type": "done"}
+            return
+
+        yield {"type": "sources", "sources": sources}
+
+        prompt = build_rag_prompt(query=question, retrieved_chunks=sources)
+        for token in generate_answer_stream(
+            prompt=prompt,
+            provider=self.llm_provider,
+            ollama_host=self.ollama_host,
+            ollama_model=self.ollama_model,
+            groq_api_key=self.groq_api_key,
+            groq_model=self.groq_model,
+            groq_temperature=self.groq_temperature,
+        ):
+            yield {"type": "token", "text": token}
+
+        yield {"type": "done"}

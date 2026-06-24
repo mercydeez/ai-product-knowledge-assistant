@@ -5,6 +5,7 @@ collection) only runs if TestClient is used as a context manager, so plain
 `TestClient(app)` lets us skip it entirely and inject a mock service instead.
 """
 
+import json
 import unittest
 from unittest.mock import MagicMock
 
@@ -86,6 +87,59 @@ class TestApiRoutes(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["sources"], [])
+
+    def test_ask_stream_emits_sources_then_tokens_then_done(self) -> None:
+        sources = [
+            {
+                "rank": 1,
+                "score": 0.91,
+                "top_match_score": 0.91,
+                "chunk_id": "SKU-1003_chunk_1",
+                "product_id": "SKU-1003",
+                "product_name": "Sienna Floral Summer Dress",
+                "category": "Dresses",
+                "color": "Coral",
+                "text": "A lightweight midi dress with floral print.",
+            }
+        ]
+        self.rag_service.answer_question_stream.return_value = iter(
+            [
+                {"type": "sources", "sources": sources},
+                {"type": "token", "text": "The Sienna "},
+                {"type": "token", "text": "dress is a great fit."},
+                {"type": "done"},
+            ]
+        )
+
+        response = self.client.post("/ask/stream", json={"question": "a floral summer dress"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["content-type"], "text/event-stream; charset=utf-8")
+
+        lines = [line for line in response.text.split("\n\n") if line]
+        events = [json.loads(line.removeprefix("data: ")) for line in lines]
+        self.assertEqual(
+            events,
+            [
+                {"type": "sources", "sources": sources},
+                {"type": "token", "text": "The Sienna "},
+                {"type": "token", "text": "dress is a great fit."},
+                {"type": "done"},
+            ],
+        )
+
+    def test_ask_stream_emits_error_event_on_exception(self) -> None:
+        def raise_error():
+            raise RuntimeError("GROQ_API_KEY is not set.")
+            yield  # pragma: no cover - makes this a generator function
+
+        self.rag_service.answer_question_stream.return_value = raise_error()
+
+        response = self.client.post("/ask/stream", json={"question": "a floral summer dress"})
+
+        self.assertEqual(response.status_code, 200)
+        event = json.loads(response.text.strip().removeprefix("data: "))
+        self.assertEqual(event, {"type": "error", "message": "GROQ_API_KEY is not set."})
 
 
 if __name__ == "__main__":

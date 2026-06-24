@@ -3,8 +3,9 @@
 import logging
 import time
 from contextlib import asynccontextmanager
+from typing import Any, Callable
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 try:
@@ -45,22 +46,52 @@ app.add_middleware(
 )
 
 
-@app.middleware("http")
-async def log_request_timing(request: Request, call_next):
-    """Log method/path/status/duration for every request and expose it as a header."""
-    start = time.perf_counter()
-    response = await call_next(request)
-    duration_ms = (time.perf_counter() - start) * 1000
+class RequestTimingMiddleware:
+    """Raw ASGI middleware that logs request timing without buffering the response body.
 
-    response.headers["X-Process-Time-Ms"] = f"{duration_ms:.2f}"
-    logger.info(
-        "method=%s path=%s status=%s duration_ms=%.2f",
-        request.method,
-        request.url.path,
-        response.status_code,
-        duration_ms,
-    )
-    return response
+    `@app.middleware("http")` compiles to Starlette's BaseHTTPMiddleware, which
+    fully buffers a streaming response before forwarding it — that silently
+    broke real-time token delivery on /ask/stream while looking fine on /ask
+    (whose body is already complete before the response starts). A plain ASGI
+    middleware only wraps `send`, so streamed chunks still reach the client as
+    they're produced.
+    """
 
+    def __init__(self, app: Callable) -> None:
+        self.app = app
+
+    async def __call__(self, scope: dict, receive: Callable, send: Callable) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        start = time.perf_counter()
+        status_code = 500
+
+        async def send_wrapper(message: dict[str, Any]) -> None:
+            nonlocal status_code
+            if message["type"] == "http.response.start":
+                status_code = message["status"]
+                time_to_first_byte_ms = (time.perf_counter() - start) * 1000
+                headers = list(message.get("headers", []))
+                headers.append(
+                    (b"x-process-time-ms", f"{time_to_first_byte_ms:.2f}".encode())
+                )
+                message["headers"] = headers
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+        duration_ms = (time.perf_counter() - start) * 1000
+        logger.info(
+            "method=%s path=%s status=%s duration_ms=%.2f",
+            scope["method"],
+            scope["path"],
+            status_code,
+            duration_ms,
+        )
+
+
+app.add_middleware(RequestTimingMiddleware)
 
 app.include_router(router)
