@@ -112,9 +112,9 @@ Work top-to-bottom. Each phase is independently shippable.
 - Deploy frontend to Vercel; set the API base URL env var.
 
 **Phase F — Quality signals**
-- Expand tests (retrieval + API layer).
-- RAG evaluation script (hit-rate / MRR over a small question set).
-- GitHub Actions workflow (lint + tests).
+- Expand tests (retrieval + API layer). ✅ implemented — `tests/test_retrieval.py` (ChromaDB seeding/idempotency/ranking against a fake embedding model) and `tests/test_api.py` (FastAPI routes against a mocked `ProductRAGService`, covering 200/400/422/500 paths). See `requirements-dev.txt` for the one test-only dependency.
+- RAG evaluation script (hit-rate / MRR over a small question set). Still open.
+- GitHub Actions workflow (lint + tests). Still open.
 
 ---
 

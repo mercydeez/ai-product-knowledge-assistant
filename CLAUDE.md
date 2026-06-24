@@ -11,11 +11,14 @@ uvicorn src.api.app:app --reload
 # Run the local CLI smoke test (single sample question end-to-end)
 python src/main.py
 
+# Install test-only deps once (httpx, pinned for fastapi.testclient — see requirements-dev.txt)
+pip install -r requirements-dev.txt
+
 # Run all tests
 python -m unittest discover -s tests
 
 # Run a single test
-python -m unittest tests.test_data_loader.TestDataLoader.test_products_can_be_loaded
+python -m unittest tests.test_retrieval.TestSearchSimilarChunks.test_closest_vector_ranks_first_with_expected_shape
 ```
 
 Test the running API (PowerShell):
@@ -60,3 +63,6 @@ This is a no-LangChain RAG (Retrieval-Augmented Generation) pipeline over a stat
 - **External dependencies the pipeline assumes at runtime:** the sentence-transformers model is downloaded from Hugging Face on first use then cached (offline thereafter via `local_files_only=True` fast path); a local Ollama server must be running with the configured model pulled (e.g. `ollama pull llama3.2:3b`).
 - **Chunking is line-based**, not token-based: `CHUNK_SIZE`/`CHUNK_OVERLAP` count lines of the formatted product document, and each product field is one line (see `formatter.py`).
 - `requirements.txt` is trimmed to the packages actually imported by `src/` (`fastapi`, `uvicorn`, `pydantic`, `python-dotenv`, `sentence-transformers`, `chromadb`, `numpy`, `groq`). If you add a new direct import, add it here too — don't let it drift back into a full env dump.
+- **`tests/test_api.py` never runs the real FastAPI `lifespan`** (which would load the embedding model and build the Chroma collection) — Starlette's `TestClient` only triggers `lifespan` when used as a context manager (`with TestClient(app)`). Tests construct it plainly and set `app.state.rag_service` to a `MagicMock()` directly, so route tests are pure and fast. Don't switch to the `with` form unless you actually want the real pipeline to run.
+- **`requirements-dev.txt` holds test-only deps** (currently just `httpx`, pinned to `0.27.2`) — `fastapi==0.109.0` pulls in `starlette==0.35.1`, whose `TestClient` still uses the `app=` shortcut that `httpx` removed in `0.28.0`; a bare `pip install httpx` will break `tests/test_api.py`.
+- **`tests/test_retrieval.py` builds throwaway ChromaDB collections in `tempfile.mkdtemp()` dirs**, not `data/chroma_db/`. Cleanup uses `shutil.rmtree(path, ignore_errors=True)` because Chroma's Rust bindings keep `chroma.sqlite3`/HNSW files open past the test on Windows — a plain `tempfile.TemporaryDirectory()` would raise `PermissionError` on `__exit__`.

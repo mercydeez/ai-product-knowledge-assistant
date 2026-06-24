@@ -1,0 +1,4 @@
+# Test-only dependencies (not imported by src/, so kept out of requirements.txt).
+# httpx is pinned <0.28 because fastapi==0.109.0 pulls in starlette==0.35.1,
+# whose TestClient still uses the "app=" shortcut httpx removed in 0.28.0.
+httpx==0.27.2
