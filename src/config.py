@@ -32,6 +32,9 @@ SAMPLE_QUERY = os.getenv(
 )
 TOP_K_RESULTS = int(os.getenv("TOP_K_RESULTS", "3"))
 MIN_RELEVANCE_SCORE = float(os.getenv("MIN_RELEVANCE_SCORE", "0.30"))
+RERANK_ENABLED = os.getenv("RERANK_ENABLED", "true").lower() == "true"
+RERANK_MODEL = os.getenv("RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
+RERANK_CANDIDATE_POOL = int(os.getenv("RERANK_CANDIDATE_POOL", "10"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "4"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "1"))
 CORS_ORIGINS = [

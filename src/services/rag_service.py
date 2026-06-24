@@ -20,6 +20,9 @@ try:
         MIN_RELEVANCE_SCORE,
         OLLAMA_HOST,
         OLLAMA_MODEL,
+        RERANK_CANDIDATE_POOL,
+        RERANK_ENABLED,
+        RERANK_MODEL,
         TOP_K_RESULTS,
     )
     from src.embeddings.embedder import generate_embeddings_for_chunks, load_embedding_model
@@ -28,6 +31,7 @@ try:
     from src.preprocessing.chunker import create_product_chunks
     from src.preprocessing.formatter import format_products_as_documents
     from src.retrieval.indexer import build_chroma_collection
+    from src.retrieval.reranker import load_cross_encoder_model, rerank_results
     from src.retrieval.search import search_similar_chunks
     from src.utils.data_loader import load_json, save_json
 except ImportError:
@@ -48,6 +52,9 @@ except ImportError:
         MIN_RELEVANCE_SCORE,
         OLLAMA_HOST,
         OLLAMA_MODEL,
+        RERANK_CANDIDATE_POOL,
+        RERANK_ENABLED,
+        RERANK_MODEL,
         TOP_K_RESULTS,
     )
     from embeddings.embedder import generate_embeddings_for_chunks, load_embedding_model
@@ -56,6 +63,7 @@ except ImportError:
     from preprocessing.chunker import create_product_chunks
     from preprocessing.formatter import format_products_as_documents
     from retrieval.indexer import build_chroma_collection
+    from retrieval.reranker import load_cross_encoder_model, rerank_results
     from retrieval.search import search_similar_chunks
     from utils.data_loader import load_json, save_json
 
@@ -88,6 +96,9 @@ class ProductRAGService:
         chunk_size: int = CHUNK_SIZE,
         chunk_overlap: int = CHUNK_OVERLAP,
         min_relevance_score: float = MIN_RELEVANCE_SCORE,
+        rerank_enabled: bool = RERANK_ENABLED,
+        reranker_model_name: str = RERANK_MODEL,
+        rerank_candidate_pool: int = RERANK_CANDIDATE_POOL,
     ) -> None:
         self.data_path = data_path
         self.chunks_output_path = chunks_output_path
@@ -106,10 +117,14 @@ class ProductRAGService:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.min_relevance_score = min_relevance_score
+        self.rerank_enabled = rerank_enabled
+        self.reranker_model_name = reranker_model_name
+        self.rerank_candidate_pool = rerank_candidate_pool
 
         self.collection = None
         self.records: list[dict] = []
         self.embedding_model = None
+        self.reranker_model = None
         self.product_lookup: dict[str, dict] = {}
 
     def initialize(self) -> None:
@@ -124,6 +139,9 @@ class ProductRAGService:
             collection_name=self.chroma_collection_name,
         )
         self.embedding_model = load_embedding_model(self.embedding_model_name)
+
+        if self.rerank_enabled:
+            self.reranker_model = load_cross_encoder_model(self.reranker_model_name)
 
         # A single chunk only covers a few product fields (see chunker.py), so
         # sources are enriched from the full product record for display.
@@ -170,16 +188,33 @@ class ProductRAGService:
             raise RuntimeError("RAG service is not initialized.")
 
         result_count = top_k or self.top_k_results
+        pool_size = max(result_count, self.rerank_candidate_pool) if self.rerank_enabled else result_count
 
-        sources = search_similar_chunks(
+        candidates = search_similar_chunks(
             query=question,
             collection=self.collection,
             model_name=self.embedding_model_name,
-            top_k=result_count,
+            top_k=pool_size,
             model_instance=self.embedding_model,
         )
 
+        # Captured before reranking can reorder anything, so the off-topic
+        # gate always sees the same number regardless of whether reranking is
+        # enabled — it's the single nearest-neighbor cosine score either way.
+        top_match_score = candidates[0]["score"] if candidates else 0.0
+
+        if self.rerank_enabled and len(candidates) > 1:
+            sources = rerank_results(
+                query=question,
+                results=candidates,
+                model=self.reranker_model,
+                top_k=result_count,
+            )
+        else:
+            sources = candidates[:result_count]
+
         for source in sources:
+            source["top_match_score"] = top_match_score
             product = self.product_lookup.get(source["product_id"], {})
             source["category"] = product.get("category", "")
             source["color"] = product.get("color", "")
@@ -192,7 +227,7 @@ class ProductRAGService:
 
         # No chunk is a good enough match for this question to be about the
         # catalog at all — decline without spending an LLM call on it.
-        if not sources or sources[0]["score"] < self.min_relevance_score:
+        if not sources or sources[0]["top_match_score"] < self.min_relevance_score:
             return {
                 "question": question,
                 "answer": OFF_TOPIC_MESSAGE,

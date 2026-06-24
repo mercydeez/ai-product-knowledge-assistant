@@ -23,6 +23,7 @@ USER appuser
 # after 15min idle) don't need to hit the Hugging Face Hub before the API
 # can serve a request.
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN python -c "from sentence_transformers import CrossEncoder; CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')"
 
 EXPOSE 8000
 ENV PORT=8000

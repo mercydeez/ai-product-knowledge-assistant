@@ -8,6 +8,7 @@ from src.services.rag_service import OFF_TOPIC_MESSAGE, ProductRAGService
 SOURCE = {
     "rank": 1,
     "score": 0.0,
+    "top_match_score": 0.0,
     "chunk_id": "SKU-1001_chunk_1",
     "product_id": "SKU-1001",
     "product_name": "Luna Everyday Cotton Shirt",
@@ -27,7 +28,9 @@ class TestOffTopicGuardrail(unittest.TestCase):
     @patch("src.services.rag_service.generate_answer")
     @patch("src.services.rag_service.build_rag_prompt")
     def test_low_score_declines_without_calling_llm(self, mock_build_prompt, mock_generate) -> None:
-        self.service.retrieve_sources = MagicMock(return_value=[{**SOURCE, "score": 0.1}])
+        self.service.retrieve_sources = MagicMock(
+            return_value=[{**SOURCE, "score": 0.1, "top_match_score": 0.1}]
+        )
 
         result = self.service.answer_question("What is the capital of France?")
 
@@ -54,7 +57,7 @@ class TestOffTopicGuardrail(unittest.TestCase):
     @patch("src.services.rag_service.generate_answer")
     @patch("src.services.rag_service.build_rag_prompt")
     def test_high_score_calls_llm_and_returns_sources(self, mock_build_prompt, mock_generate) -> None:
-        sources = [{**SOURCE, "score": 0.8}]
+        sources = [{**SOURCE, "score": 0.8, "top_match_score": 0.8}]
         self.service.retrieve_sources = MagicMock(return_value=sources)
         mock_build_prompt.return_value = "a built prompt"
         mock_generate.return_value = "The Luna shirt is breathable cotton."
@@ -68,7 +71,9 @@ class TestOffTopicGuardrail(unittest.TestCase):
     @patch("src.services.rag_service.generate_answer")
     @patch("src.services.rag_service.build_rag_prompt")
     def test_score_exactly_at_threshold_calls_llm(self, mock_build_prompt, mock_generate) -> None:
-        self.service.retrieve_sources = MagicMock(return_value=[{**SOURCE, "score": 0.35}])
+        self.service.retrieve_sources = MagicMock(
+            return_value=[{**SOURCE, "score": 0.35, "top_match_score": 0.35}]
+        )
         mock_generate.return_value = "An answer."
 
         result = self.service.answer_question("right at the threshold")
