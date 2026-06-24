@@ -218,6 +218,16 @@ Exits non-zero if hit-rate drops below `--min-hit-rate` (default `0.8`) — usef
 
 A GitHub Actions workflow (`.github/workflows/ci.yml`) runs backend lint + tests and frontend lint + build on every push/PR to `main`.
 
+### 9. Evaluate answer quality
+
+An LLM-judge eval (real Groq calls — needs `GROQ_API_KEY`, not run in CI) generates a real answer for each question in the same set, then asks Groq to grade it 1-5 on faithfulness (no invented facts) and relevance:
+
+```bash
+python scripts/evaluate_answers.py
+```
+
+Exits non-zero if either average drops below `--min-score` (default `4.0`) — a regression check for prompt/grounding changes that `evaluate_rag.py`'s retrieval-only metrics can't catch.
+
 ## Current Scope
 
 What this project does now:
