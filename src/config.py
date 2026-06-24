@@ -31,7 +31,7 @@ SAMPLE_QUERY = os.getenv(
     "I need a breathable white cotton shirt for everyday use.",
 )
 TOP_K_RESULTS = int(os.getenv("TOP_K_RESULTS", "3"))
-MIN_RELEVANCE_SCORE = float(os.getenv("MIN_RELEVANCE_SCORE", "0.35"))
+MIN_RELEVANCE_SCORE = float(os.getenv("MIN_RELEVANCE_SCORE", "0.30"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "4"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "1"))
 CORS_ORIGINS = [
