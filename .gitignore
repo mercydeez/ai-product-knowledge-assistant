@@ -5,6 +5,9 @@ venv/
 # Environment variables
 .env
 
+# ChromaDB persisted vector store (regenerated from data/product_embeddings.json)
+data/chroma_db/
+
 # Python cache
 __pycache__/
 *.py[cod]

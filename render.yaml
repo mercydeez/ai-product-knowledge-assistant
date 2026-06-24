@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: ai-product-knowledge-assistant-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: LLM_PROVIDER
+        value: groq
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: EMBEDDING_MODEL
+        value: all-MiniLM-L6-v2
+      - key: TOP_K_RESULTS
+        value: "3"
+      - key: CHUNK_SIZE
+        value: "4"
+      - key: CHUNK_OVERLAP
+        value: "1"
+      # Update after the frontend is deployed to Vercel, then redeploy.
+      - key: CORS_ORIGINS
+        value: http://localhost:3000

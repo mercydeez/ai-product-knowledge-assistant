@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f4ef;
+  --foreground: #1b1a17;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-newsreader);
+
+  --color-cream: #f6f4ef;
+  --color-ink: #1b1a17;
+  --color-muted: #6e6a62;
+  --color-muted-2: #8c887e;
+  --color-muted-3: #a39e94;
+
+  --color-line: #e7e2d8;
+  --color-line-soft: #ece7dd;
+  --color-line-faint: #f0ece3;
+
+  --color-card: #ffffff;
+  --color-card-soft: #faf8f3;
+
+  --color-accent: #1f6b4f;
+  --color-accent-strong: #18573f;
+  --color-accent-soft: #e9f1ed;
+
+  --color-error: #b4452f;
+  --color-error-soft: #fbece8;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.55;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+::placeholder {
+  color: var(--color-muted-3);
+}
+
+.skeleton-line {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-line-faint) 25%,
+    var(--color-cream) 50%,
+    var(--color-line-faint) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite;
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2.2s ease-in-out infinite;
+}

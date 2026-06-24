@@ -39,6 +39,11 @@ ai-product-assistant/
 │   └── utils/
 ├── tests/
 │   └── test_data_loader.py
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   └── package.json
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
@@ -58,6 +63,51 @@ Test the endpoint in PowerShell:
 ```powershell
 $body = @{ question = "I need a breathable cotton shirt for everyday use." } | ConvertTo-Json
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/ask" -Method Post -ContentType "application/json" -Body $body
+```
+
+## Frontend
+
+A Next.js (App Router, TypeScript, Tailwind) UI lives in `frontend/`. It calls the FastAPI `/ask` endpoint and renders the grounded answer alongside the retrieved source chunks.
+
+```bash
+cd frontend
+npm install
+cp .env.local.example .env.local
+npm run dev
+```
+
+Open `http://localhost:3000`. The backend must be running (see above) and `CORS_ORIGINS` in `.env` must include `http://localhost:3000` (it does by default).
+
+## Deployment
+
+The backend is a Dockerized FastAPI app deployed to [Render](https://render.com) (free tier); the frontend is deployed to [Vercel](https://vercel.com). Both build from this repo's `main` branch.
+
+### Backend → Render
+
+1. In the Render dashboard: **New → Blueprint**, connect this GitHub repo, branch `main`. Render reads `render.yaml` at the repo root automatically.
+2. When prompted for `GROQ_API_KEY`, paste your real key directly into Render's dashboard — it's stored as an encrypted secret and never goes through source control.
+3. Click **Apply**. The first build takes a few minutes: it installs the CPU-only `torch` wheel (Render's free tier has no GPU) and bakes the `all-MiniLM-L6-v2` embedding model into the image so cold starts don't need to call out to Hugging Face.
+4. Once live, copy the public URL (e.g. `https://ai-product-knowledge-assistant-api.onrender.com`) and sanity-check it: `curl https://<your-render-url>/health`.
+
+Free tier note: the service spins down after 15 minutes idle, so the first request after a quiet period takes ~30-60s to wake back up — that's expected, not a bug.
+
+### Frontend → Vercel
+
+1. In the Vercel dashboard: **Add New → Project**, import this GitHub repo.
+2. Set **Root Directory** to `frontend` — Next.js is auto-detected.
+3. Add an environment variable: `NEXT_PUBLIC_API_BASE_URL` = the Render URL from above.
+4. Deploy, then copy the resulting URL (e.g. `https://ai-product-knowledge-assistant.vercel.app`).
+
+### Close the loop (CORS)
+
+5. Back in Render, edit the backend service's `CORS_ORIGINS` env var to include the Vercel URL, e.g. `https://ai-product-knowledge-assistant.vercel.app,http://localhost:3000`. Saving triggers an automatic redeploy.
+6. Open the Vercel URL and ask a question to confirm the full stack works live.
+
+### Running the backend container locally
+
+```bash
+docker build -t product-knowledge-assistant .
+docker run -p 8000:8000 -e GROQ_API_KEY=your-key-here product-knowledge-assistant
 ```
 
 ## Setup Instructions
@@ -115,11 +165,14 @@ Then update the values if needed:
 
 ```env
 EMBEDDING_MODEL=all-MiniLM-L6-v2
-OLLAMA_MODEL=llama3.2:3b
+LLM_PROVIDER=groq
+GROQ_API_KEY=your-key-here
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
 Note: the first run will download the embedding model from Hugging Face. Internet access is needed once, then it is cached locally.
-For the final answer-generation step, start Ollama locally and pull a model such as `llama3.2:3b`.
+
+For the final answer-generation step, the default provider is **Groq** (hosted, free tier) — get a key at https://console.groq.com/keys and set `GROQ_API_KEY` in `.env`. To use a local model instead, set `LLM_PROVIDER=ollama` and start Ollama locally with a pulled model such as `llama3.2:3b`.
 
 ### 5. Run the project
 
@@ -150,15 +203,15 @@ What this project does now:
 - loads configuration from environment variables
 - prepares chunks for retrieval
 - creates local embeddings
-- runs FAISS similarity search
-- generates a grounded final answer through Ollama
+- runs a persistent ChromaDB similarity search
+- generates a grounded final answer through Groq (or local Ollama)
 - exposes the pipeline through a FastAPI backend
+- ships a Next.js frontend for asking questions and viewing cited sources
 
 What this project does not do yet:
 
 - no database
 - no authentication
-- no frontend
 
 ## Why This Structure
 

@@ -84,33 +84,38 @@ data/products.json
 
 Work top-to-bottom. Each phase is independently shippable.
 
-**Phase A — Groq LLM provider**
-- Add a Groq client (`src/llm/groq_client.py`) using the `groq` SDK.
-- Introduce an `LLM_PROVIDER` env var (`groq` | `ollama`) and route through a small selector so the service stays provider-agnostic.
-- Add `GROQ_API_KEY`, `GROQ_MODEL` to config and `.env.example`.
+**Phase A — Groq LLM provider** ✅ implemented
+- `src/llm/groq_client.py` calls Groq's chat completions API via the `groq` SDK (already pinned in `requirements.txt`).
+- `src/llm/provider.py` is the selector — `generate_answer(prompt, provider, ...)` dispatches to `call_groq` or `call_ollama`. `ProductRAGService` calls it instead of `call_ollama` directly, so it stays provider-agnostic.
+- `LLM_PROVIDER` (default `groq`), `GROQ_API_KEY`, `GROQ_MODEL` (default `llama-3.3-70b-versatile`) added to `config.py` and `.env.example`. Set `LLM_PROVIDER=ollama` to fall back to local Ollama.
+- A missing `GROQ_API_KEY` raises a friendly `RuntimeError` pointing to `https://console.groq.com/keys`, surfaced through `/ask` as a 500 with that `detail` message — verified end-to-end against the live API.
 
-**Phase B — ChromaDB vector store**
-- Replace `retrieval/indexer.py` (FAISS) with a ChromaDB persistent collection.
-- Update `retrieval/search.py` to query ChromaDB; keep the same `sources` shape (rank/score/chunk_id/product_id/product_name/text).
-- Ingestion seeds the collection on startup if empty (mirrors current lazy-artifact behavior).
+**Phase B — ChromaDB vector store** ✅ implemented
+- `retrieval/indexer.py`'s `build_chroma_collection()` replaces the FAISS `IndexFlatIP` builder with a `chromadb.PersistentClient` collection (cosine space) persisted under `data/chroma_db/` (gitignored — regenerated from `data/product_embeddings.json`).
+- `retrieval/search.py`'s `search_similar_chunks()` now queries the collection (`collection.query(...)`) instead of a FAISS index; `score = 1 - distance` keeps the same 0..1 "higher is better" semantics. The `sources` shape (rank/score/chunk_id/product_id/product_name/text) is unchanged.
+- Ingestion seeds the collection on startup only if empty (`collection.count() == 0`), mirroring the existing lazy-artifact behavior for the chunk/embedding JSON files.
 
 **Phase C — API hardening for a public frontend**
 - Add CORS middleware (allow the Vercel domain + localhost).
 - Add structured logging (use existing `LOG_LEVEL`) and request timing.
 - Confirm the `/ask` and `/health` contract (Section 5) is stable — the UI depends on it.
 
-**Phase D — Frontend (Next.js)** ← *Claude Design produces this*
-- Generate UI from the brief in Section 6.
-- Wire it to the backend via `NEXT_PUBLIC_API_BASE_URL`.
+**Phase D — Frontend (Next.js)** ✅ implemented
+- Built from the Claude Design prototype "Product Knowledge Assistant.dc.html" (Section 6 brief), imported via the `claude_design` MCP connector.
+- Scaffolded with `create-next-app` → Next.js 16, React 19, TypeScript, Tailwind CSS v4 (CSS-first `@theme` tokens) under `frontend/`.
+- The design's mocked client-side retrieval (`tokenize`/`scoreProduct`/`retrieve`/fixed `setTimeout` steps) was replaced with a real typed client (`frontend/lib/api.ts`) calling `POST /ask`, and a real `/health` poll for the "API connected" badge.
+- `category`/`color` were added to the `/ask` response (`SourceItem`, populated from the product record in `ProductRAGService.retrieve_sources`) after testing showed a single chunk often doesn't contain those fields (chunker.py splits each product into multiple line-windows) — text-parsing them client-side was unreliable. `frontend/lib/chunk.ts` only does `colorToHex`/`luminance` now (color-name → swatch hex).
+- Wired to the backend via `NEXT_PUBLIC_API_BASE_URL` (`frontend/.env.local.example`).
 
-**Phase E — Containerize + deploy**
-- Dockerfile for the backend; deploy to Render / HF Spaces.
-- Deploy frontend to Vercel; set the API base URL env var.
+**Phase E — Containerize + deploy** — backend host decided: **Render** (see Section 7). Files ready, deploy steps documented in `README.md` § Deployment; live URLs pending the actual dashboard deploy.
+- `Dockerfile` (repo root, `python:3.12-slim`) installs the CPU-only `torch` wheel before `requirements.txt` — Render's free tier is CPU-only, and the default `pip install torch` pulls ~2GB of unused CUDA/NVIDIA dependencies. Bakes the `all-MiniLM-L6-v2` embedding model into the image at build time so a cold start (free tier spins down after 15min idle) never needs to call the Hugging Face Hub. Runs as a non-root `appuser`. Verified locally end-to-end (`docker build` + `docker run` + `/health` + `/ask`) before being wired up to Render.
+- `render.yaml` blueprint deploys the backend as a free web service; `GROQ_API_KEY` is `sync: false` (entered manually in Render's dashboard, never committed). `CORS_ORIGINS` defaults to `http://localhost:3000` and must be updated with the real Vercel URL once the frontend is deployed (see README § "Close the loop").
+- Frontend deploys to Vercel with **Root Directory** set to `frontend/` and `NEXT_PUBLIC_API_BASE_URL` set to the Render backend's public URL.
 
 **Phase F — Quality signals**
-- Expand tests (retrieval + API layer).
-- RAG evaluation script (hit-rate / MRR over a small question set).
-- GitHub Actions workflow (lint + tests).
+- Expand tests (retrieval + API layer). ✅ implemented — `tests/test_retrieval.py` (ChromaDB seeding/idempotency/ranking against a fake embedding model) and `tests/test_api.py` (FastAPI routes against a mocked `ProductRAGService`, covering 200/400/422/500 paths). See `requirements-dev.txt` for the one test-only dependency.
+- RAG evaluation script (hit-rate / MRR over a small question set). Still open.
+- GitHub Actions workflow (lint + tests). Still open.
 
 ---
 
@@ -140,6 +145,8 @@ Response:
       "chunk_id": "SKU-1001_chunk_1",
       "product_id": "SKU-1001",
       "product_name": "Luna Everyday Cotton Shirt",
+      "category": "Tops",
+      "color": "White",
       "text": "Product Name: Luna Everyday Cotton Shirt\nCategory: Tops\n..."
     }
   ]
@@ -197,5 +204,5 @@ Read the API base URL from `process.env.NEXT_PUBLIC_API_BASE_URL` (default to `h
 ## 7. Open items / decisions still to make
 
 - Final Groq model id (default `llama-3.3-70b-versatile`).
-- Backend host: Render (sleeps when idle, true backend) vs Hugging Face Spaces (ML-recognized, Docker). Decide at Phase E.
+- Backend host: **Render**, decided at Phase E (2026-06-24) — a real JSON API is a more conventional fit for a true backend host than a Spaces demo-UI convention.
 - Whether to keep multi-turn history (Phase F stretch) or stay single-shot.

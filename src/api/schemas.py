@@ -17,6 +17,8 @@ class SourceItem(BaseModel):
     chunk_id: str
     product_id: str
     product_name: str
+    category: str
+    color: str
     text: str
 
 

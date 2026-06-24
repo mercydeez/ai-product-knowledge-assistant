@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+.env.example
+.claude
+frontend
+tests
+__pycache__
+*.py[cod]
+.pytest_cache
+data/chroma_db
+README.md
+design.md
+CLAUDE.md
+requirements-dev.txt
