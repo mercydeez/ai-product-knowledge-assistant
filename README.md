@@ -10,13 +10,15 @@
 
 **Live demo:** [ai-product-knowledge-assistant.vercel.app](https://ai-product-knowledge-assistant.vercel.app) (backend: [ai-product-knowledge-assistant-api.onrender.com](https://ai-product-knowledge-assistant-api.onrender.com) — free tier, may take ~30-60s to wake up if idle).
 
+![A question answered with a grounded answer and ranked, cited sources side-by-side](docs/screenshot-answer.png)
+
 A fashion and e-commerce product knowledge assistant: a no-LangChain Retrieval-Augmented Generation (RAG) pipeline (sentence-transformers + ChromaDB + Groq) behind a FastAPI backend, with a Next.js frontend.
 
 A user asks a natural-language question about the product catalog and gets back a grounded answer plus the exact retrieved product chunks it was generated from — the retrieval is visible, not just claimed. See `design.md` for the full architecture, phased build history, and frozen API contract.
 
 ## What's implemented
 
-- Local embeddings (sentence-transformers) + a persistent ChromaDB vector store, with cross-encoder reranking over a larger candidate pool
+- Local embeddings (sentence-transformers) + a persistent ChromaDB vector store, with optional cross-encoder reranking over a larger candidate pool (on by default locally; off in production — see `RERANK_ENABLED` in `CLAUDE.md`)
 - Grounded answer generation via Groq (hosted) or Ollama (local), behind a pluggable provider
 - A deterministic off-topic guardrail that declines out-of-catalog questions without ever calling the LLM
 - `POST /ask` and an SSE `POST /ask/stream` for incremental token delivery, both per-IP rate-limited
@@ -25,6 +27,14 @@ A user asks a natural-language question about the product catalog and gets back 
 - Dockerized backend deployed to Render; frontend deployed to Vercel — see **Live demo** above and **Deployment** below
 
 What it deliberately doesn't do: no database, no authentication, no multi-turn conversation history (single-shot Q&A).
+
+## Screenshots
+
+| Ask anything | Off-topic guardrail |
+|---|---|
+| ![Idle state with example question chips](docs/screenshot-idle.png) | ![Off-topic question declined with "Outside catalog scope" instead of speculating](docs/screenshot-offtopic.png) |
+
+The guardrail on the right declines questions outside the catalog **before the LLM is ever called** — a deterministic relevance check on retrieval scores, not the model being asked to behave.
 
 ## Project Structure
 
