@@ -45,25 +45,26 @@ ai-product-knowledge-assistant/
 │   ├── product_embeddings.json
 │   └── products.json
 ├── src/
-│   ├── api/            # FastAPI app, routes, schemas, rate limiting
-│   ├── config.py       # all tunables, loaded from .env
-│   ├── embeddings/     # sentence-transformers wrapper
-│   ├── llm/            # Groq/Ollama clients, provider dispatch, prompt builder
-│   ├── preprocessing/  # product → text → chunks
-│   ├── retrieval/      # ChromaDB indexer/search + cross-encoder reranker
-│   ├── services/       # ProductRAGService, the orchestration core
+│   ├── api/           # FastAPI app, routes, schemas, rate limiting
+│   ├── config.py      # all tunables, loaded from .env
+│   ├── embeddings/    # sentence-transformers wrapper
+│   ├── llm/           # Groq/Ollama clients, provider dispatch, prompt builder
+│   ├── preprocessing/ # product → text → chunks
+│   ├── retrieval/     # ChromaDB indexer/search + cross-encoder reranker
+│   ├── services/      # ProductRAGService, the orchestration core
 │   ├── utils/
-│   └── main.py         # CLI smoke test
-├── scripts/             # evaluate_rag.py (retrieval), evaluate_answers.py (LLM-judge)
+│   └── main.py        # CLI smoke test
+├── scripts/           # evaluate_rag.py (retrieval), evaluate_answers.py (LLM-judge)
 ├── tests/
-├── frontend/            # Next.js app (App Router, TypeScript, Tailwind)
+├── frontend/          # Next.js app (App Router, TypeScript, Tailwind)
 │   ├── app/
 │   ├── components/
 │   └── lib/
+├── docs/              # screenshots used in this README
 ├── .github/workflows/ci.yml
 ├── Dockerfile
 ├── render.yaml
-├── design.md            # architecture, phased build history, API contract
+├── design.md          # architecture, phased build history, API contract
 ├── .env.example
 ├── requirements.txt
 └── README.md
