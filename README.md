@@ -1,55 +1,60 @@
 # AI Product Knowledge Assistant
 
 [![CI](https://github.com/mercydeez/ai-product-knowledge-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/mercydeez/ai-product-knowledge-assistant/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-vector%20store-FF6F00)
+![Docker](https://img.shields.io/badge/Docker-deployed-2496ED?logo=docker&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 **Live demo:** [ai-product-knowledge-assistant.vercel.app](https://ai-product-knowledge-assistant.vercel.app) (backend: [ai-product-knowledge-assistant-api.onrender.com](https://ai-product-knowledge-assistant-api.onrender.com) — free tier, may take ~30-60s to wake up if idle).
 
 A fashion and e-commerce product knowledge assistant: a no-LangChain Retrieval-Augmented Generation (RAG) pipeline (sentence-transformers + ChromaDB + Groq) behind a FastAPI backend, with a Next.js frontend.
 
-## Project Goal
+A user asks a natural-language question about the product catalog and gets back a grounded answer plus the exact retrieved product chunks it was generated from — the retrieval is visible, not just claimed. See `design.md` for the full architecture, phased build history, and frozen API contract.
 
-Build a production-minded Python project that will later support:
+## What's implemented
 
-- product knowledge ingestion
-- text chunking and embeddings
-- vector search
-- question answering over product data
+- Local embeddings (sentence-transformers) + a persistent ChromaDB vector store, with cross-encoder reranking over a larger candidate pool
+- Grounded answer generation via Groq (hosted) or Ollama (local), behind a pluggable provider
+- A deterministic off-topic guardrail that declines out-of-catalog questions without ever calling the LLM
+- `POST /ask` and an SSE `POST /ask/stream` for incremental token delivery, both per-IP rate-limited
+- A FastAPI backend (CORS, request-timing middleware, structured logging) and a Next.js frontend showing the answer alongside its ranked sources
+- Retrieval and LLM-judge answer-quality eval scripts, a unit test suite, and GitHub Actions CI
+- Dockerized backend deployed to Render; frontend deployed to Vercel — see **Live demo** above and **Deployment** below
 
-This phase only prepares the project structure, configuration, and sample dataset.
-Phase 2 adds a FastAPI backend around the same local retrieval and Ollama pipeline.
+What it deliberately doesn't do: no database, no authentication, no multi-turn conversation history (single-shot Q&A).
 
 ## Project Structure
 
 ```text
-ai-product-assistant/
+ai-product-knowledge-assistant/
 ├── data/
 │   ├── product_chunks.json
 │   ├── product_embeddings.json
 │   └── products.json
 ├── src/
-│   ├── __init__.py
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   ├── routes.py
-│   │   └── schemas.py
-│   ├── config.py
-│   ├── embeddings/
-│   ├── llm/
-│   ├── main.py
-│   ├── preprocessing/
-│   ├── retrieval/
-│   ├── services/
-│   └── utils/
+│   ├── api/            # FastAPI app, routes, schemas, rate limiting
+│   ├── config.py       # all tunables, loaded from .env
+│   ├── embeddings/     # sentence-transformers wrapper
+│   ├── llm/            # Groq/Ollama clients, provider dispatch, prompt builder
+│   ├── preprocessing/  # product → text → chunks
+│   ├── retrieval/      # ChromaDB indexer/search + cross-encoder reranker
+│   ├── services/       # ProductRAGService, the orchestration core
+│   ├── utils/
+│   └── main.py         # CLI smoke test
+├── scripts/             # evaluate_rag.py (retrieval), evaluate_answers.py (LLM-judge)
 ├── tests/
-│   └── test_data_loader.py
-├── frontend/
+├── frontend/            # Next.js app (App Router, TypeScript, Tailwind)
 │   ├── app/
 │   ├── components/
-│   ├── lib/
-│   └── package.json
+│   └── lib/
+├── .github/workflows/ci.yml
+├── Dockerfile
+├── render.yaml
+├── design.md            # architecture, phased build history, API contract
 ├── .env.example
-├── .gitignore
 ├── requirements.txt
 └── README.md
 ```
@@ -120,7 +125,7 @@ docker run -p 8000:8000 -e GROQ_API_KEY=your-key-here product-knowledge-assistan
 
 ```bash
 git clone <your-repo-url>
-cd ai-product-assistant
+cd ai-product-knowledge-assistant
 ```
 
 ### 2. Create virtual environment
@@ -228,39 +233,9 @@ python scripts/evaluate_answers.py
 
 Exits non-zero if either average drops below `--min-score` (default `4.0`) — a regression check for prompt/grounding changes that `evaluate_rag.py`'s retrieval-only metrics can't catch.
 
-## Current Scope
-
-What this project does now:
-
-- stores product knowledge in JSON
-- loads configuration from environment variables
-- prepares chunks for retrieval
-- creates local embeddings
-- runs a persistent ChromaDB similarity search
-- generates a grounded final answer through Groq (or local Ollama)
-- exposes the pipeline through a FastAPI backend
-- ships a Next.js frontend for asking questions and viewing cited sources
-
-What this project does not do yet:
-
-- no database
-- no authentication
-
 ## Why This Structure
 
-- `src/` keeps application code separate from data and documentation
-- `config.py` centralizes environment-based settings
-- `utils/data_loader.py` isolates JSON reading logic from application flow
-- `data/products.json` gives us realistic business data for future RAG steps
-- `tests/` prepares us for production-style development from day one
-
-## Next Phase Direction
-
-In the next step, we can start building the first RAG-ready components manually:
-
-1. load product records
-2. normalize text fields
-3. create document text representations
-4. prepare for chunking and embeddings
-
-This keeps the project easy to understand while still following real-world engineering structure.
+- **Modular architecture** — `src/` separates the API layer, RAG orchestration, retrieval, LLM clients, and preprocessing into independent packages, demonstrating clean separation of concerns rather than one monolithic script.
+- **Centralized, environment-driven config** (`config.py`) — every tunable (embedding model, chunk size, rerank settings, rate limits) flows through one place and is overridable via `.env`, the same pattern used in production services.
+- **Tested at the unit and integration level** (`tests/`) — the RAG-specific logic (chunking, document formatting, prompt construction, retrieval ranking, the off-topic guardrail) has dedicated tests, not just smoke tests, with GitHub Actions CI enforcing it on every push.
+- **Evaluation, not just demos** (`scripts/`) — retrieval quality (hit-rate/MRR) and answer quality (LLM-judge faithfulness/relevance) are measured against a fixed question set, the same discipline used to validate real RAG systems before shipping.
