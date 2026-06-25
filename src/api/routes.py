@@ -6,10 +6,14 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 try:
+    from src.api.rate_limit import limiter
     from src.api.schemas import AskRequest, AskResponse
+    from src.config import RATE_LIMIT_ASK
     from src.services.rag_service import ProductRAGService
 except ImportError:
+    from api.rate_limit import limiter
     from api.schemas import AskRequest, AskResponse
+    from config import RATE_LIMIT_ASK
     from services.rag_service import ProductRAGService
 
 
@@ -28,12 +32,13 @@ def health_check() -> dict:
 
 
 @router.post("/ask", response_model=AskResponse)
-def ask_product_question(request: AskRequest, http_request: Request) -> AskResponse:
+@limiter.limit(RATE_LIMIT_ASK)
+def ask_product_question(payload: AskRequest, request: Request) -> AskResponse:
     """Answer a product question using retrieval and the local Ollama model."""
-    rag_service = get_rag_service(http_request)
+    rag_service = get_rag_service(request)
 
     try:
-        result = rag_service.answer_question(request.question)
+        result = rag_service.answer_question(payload.question)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -43,13 +48,14 @@ def ask_product_question(request: AskRequest, http_request: Request) -> AskRespo
 
 
 @router.post("/ask/stream")
-def ask_product_question_stream(request: AskRequest, http_request: Request) -> StreamingResponse:
+@limiter.limit(RATE_LIMIT_ASK)
+def ask_product_question_stream(payload: AskRequest, request: Request) -> StreamingResponse:
     """Stream a grounded answer as Server-Sent Events: sources, then tokens, then done."""
-    rag_service = get_rag_service(http_request)
+    rag_service = get_rag_service(request)
 
     def event_stream():
         try:
-            for event in rag_service.answer_question_stream(request.question):
+            for event in rag_service.answer_question_stream(payload.question):
                 yield f"data: {json.dumps(event)}\n\n"
         except Exception as exc:
             yield f"data: {json.dumps({'type': 'error', 'message': str(exc)})}\n\n"

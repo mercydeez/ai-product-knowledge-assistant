@@ -5,14 +5,18 @@ import time
 from contextlib import asynccontextmanager
 from typing import Any, Callable
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 
 try:
+    from src.api.rate_limit import limiter
     from src.api.routes import router
     from src.config import APP_NAME, CORS_ORIGINS, LOG_LEVEL
     from src.services.rag_service import ProductRAGService
 except ImportError:
+    from api.rate_limit import limiter
     from api.routes import router
     from config import APP_NAME, CORS_ORIGINS, LOG_LEVEL
     from services.rag_service import ProductRAGService
@@ -44,6 +48,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse:
+    """Keep the same `{"detail": ...}` error shape the rest of the API uses."""
+    return JSONResponse({"detail": f"Rate limit exceeded: {exc.detail}"}, status_code=429)
 
 
 class RequestTimingMiddleware:

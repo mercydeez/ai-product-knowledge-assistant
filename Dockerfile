@@ -28,4 +28,8 @@ RUN python -c "from sentence_transformers import CrossEncoder; CrossEncoder('cro
 EXPOSE 8000
 ENV PORT=8000
 
-CMD ["sh", "-c", "uvicorn src.api.app:app --host 0.0.0.0 --port ${PORT}"]
+# --proxy-headers/--forwarded-allow-ips trust Render's X-Forwarded-For so
+# request.client.host (what the slowapi per-IP rate limiter keys on) is the
+# real visitor, not Render's edge proxy — without this every visitor behind
+# Render's proxy collapses into one shared rate-limit bucket.
+CMD ["sh", "-c", "uvicorn src.api.app:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*'"]

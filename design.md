@@ -126,6 +126,7 @@ Work top-to-bottom. Each phase is independently shippable.
 - **Cross-encoder reranking** (retrieval quality): `retrieval/reranker.py` reorders a larger cosine-similarity candidate pool with a `sentence-transformers` `CrossEncoder` (`RERANK_ENABLED`/`RERANK_MODEL`/`RERANK_CANDIDATE_POOL`). The off-topic gate reads a `top_match_score` captured from the pool *before* reranking, so `MIN_RELEVANCE_SCORE`'s calibration (Phase F follow-up) is unaffected either way — verified live against the same boundary queries used to calibrate it originally. `evaluate_rag.py` hit-rate stayed 100% (MRR 0.979, down from 1.0 — one case moved from rank 1 to rank 2, still within top_k).
 - **LLM-judge answer-quality eval**: `scripts/evaluate_answers.py` generates a real answer per question and has Groq grade it 1-5 on faithfulness/relevance — complements the retrieval-only `evaluate_rag.py`. Not wired into CI (needs a real `GROQ_API_KEY`). Verified live: 4.96/5 faithfulness, 5.00/5 relevance across all 24 questions.
 - **SSE streaming** (`POST /ask/stream`, Section 5): additive endpoint, `/ask` unchanged. Surfaced and fixed a real bug along the way — Starlette's `BaseHTTPMiddleware` (`@app.middleware("http")`) fully buffers a streaming response before forwarding it, which silently broke real-time token delivery; fixed by converting the Phase C request-timing middleware to a plain ASGI middleware class. Separately, Groq's inference is fast enough (~150ms for a short answer) that raw token arrival isn't perceptible as "typing," so the frontend paces the on-screen reveal client-side while the network layer streams for real underneath — verified both with a raw timestamped chunk probe (confirms genuine incremental delivery post-fix) and live in the browser.
+- **Per-IP rate limiting** on `/ask` and `/ask/stream` (the two routes that call Groq): `src/api/rate_limit.py` holds a single `slowapi` `Limiter` instance (its own module so `routes.py` and `app.py` can both import it without a circular import), applied via `@limiter.limit(RATE_LIMIT_ASK)` (config default `20/minute`, keyed by client IP). A custom handler in `app.py` returns `429` as `{"detail": "Rate limit exceeded: ..."}` to match the existing error contract instead of slowapi's default `{"error": ...}` shape. `/health` is intentionally not limited (it's free, side-effect-free, and the frontend's `ApiStatusBadge` polls it every 30s). slowapi's `limit()` decorator requires a parameter literally named `request` typed as `fastapi.Request` (not just any name) — `routes.py`'s handlers were renamed (`request: AskRequest` → `payload: AskRequest`, `http_request: Request` → `request: Request`) to satisfy that. `schemas.py`'s `AskRequest.question` also got `max_length=500` so a single oversized request can't bypass the limiter's cost-protection intent. **Deploy gotcha caught before going live:** slowapi's `get_remote_address()` keys on `request.client.host`, which is only correct behind Render's reverse proxy if uvicorn trusts `X-Forwarded-For` — by default it doesn't (uvicorn's `forwarded_allow_ips` defaults to `127.0.0.1`, and Render's proxy isn't that). Without a fix, every visitor to the live demo would collapse into one shared rate-limit bucket. Fixed by adding `--proxy-headers --forwarded-allow-ips='*'` to the `Dockerfile`'s uvicorn `CMD`.
 
 ---
 
@@ -162,7 +163,7 @@ Response:
   ]
 }
 ```
-Errors: `400` (empty question) and `500` (pipeline failure), each `{ "detail": "<message>" }`.
+Errors: `400` (empty question), `429` (rate limit exceeded — `RATE_LIMIT_ASK`, default 20/minute per client IP), and `500` (pipeline failure), each `{ "detail": "<message>" }`.
 
 ### `POST /ask/stream` (additive — added Phase G, `/ask` above is unchanged)
 Same request body as `/ask`. Response is `text/event-stream`, one JSON object per `data:` line:
@@ -224,8 +225,8 @@ Read the API base URL from `process.env.NEXT_PUBLIC_API_BASE_URL` (default to `h
 
 ---
 
-## 7. Open items / decisions still to make
+## 7. Decisions made
 
-- Final Groq model id (default `llama-3.3-70b-versatile`).
+- Groq model id: `llama-3.3-70b-versatile` (default, `GROQ_MODEL`).
 - Backend host: **Render**, decided at Phase E (2026-06-24) — a real JSON API is a more conventional fit for a true backend host than a Spaces demo-UI convention.
-- Whether to keep multi-turn history (Phase F stretch) or stay single-shot.
+- Conversation stays single-shot (no multi-turn history) — kept the scope focused; would be the natural next stretch goal if revisited.

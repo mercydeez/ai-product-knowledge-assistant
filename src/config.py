@@ -44,6 +44,7 @@ CORS_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
+RATE_LIMIT_ASK = os.getenv("RATE_LIMIT_ASK", "20/minute")
 
 DATA_PATH = str(BASE_DIR / DATA_FILE)
 CHUNKS_OUTPUT_PATH = str(BASE_DIR / CHUNKS_OUTPUT_FILE)

@@ -6,7 +6,9 @@ from pydantic import BaseModel, Field
 class AskRequest(BaseModel):
     """Incoming request body for the ask endpoint."""
 
-    question: str = Field(..., min_length=1, description="User question to ask the assistant.")
+    question: str = Field(
+        ..., min_length=1, max_length=500, description="User question to ask the assistant."
+    )
 
 
 class SourceItem(BaseModel):

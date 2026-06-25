@@ -12,10 +12,13 @@ from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 
 from src.api.app import app
+from src.api.rate_limit import limiter
+from src.config import RATE_LIMIT_ASK
 
 
 class TestApiRoutes(unittest.TestCase):
     def setUp(self) -> None:
+        limiter.reset()  # slowapi's in-memory storage persists across tests otherwise
         self.rag_service = MagicMock()
         app.state.rag_service = self.rag_service
         self.client = TestClient(app)
@@ -58,6 +61,12 @@ class TestApiRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         self.rag_service.answer_question.assert_not_called()
 
+    def test_ask_rejects_oversized_question_with_422(self) -> None:
+        response = self.client.post("/ask", json={"question": "a" * 501})
+
+        self.assertEqual(response.status_code, 422)
+        self.rag_service.answer_question.assert_not_called()
+
     def test_ask_returns_400_for_value_error(self) -> None:
         self.rag_service.answer_question.side_effect = ValueError("Question cannot be empty.")
 
@@ -87,6 +96,23 @@ class TestApiRoutes(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["sources"], [])
+
+    def test_ask_returns_429_after_exceeding_rate_limit(self) -> None:
+        self.rag_service.answer_question.return_value = {
+            "question": "q",
+            "answer": "a",
+            "sources": [],
+        }
+        limit = int(RATE_LIMIT_ASK.split("/")[0])
+
+        for _ in range(limit):
+            response = self.client.post("/ask", json={"question": "q"})
+            self.assertEqual(response.status_code, 200)
+
+        response = self.client.post("/ask", json={"question": "q"})
+
+        self.assertEqual(response.status_code, 429)
+        self.assertIn("Rate limit exceeded", response.json()["detail"])
 
     def test_ask_stream_emits_sources_then_tokens_then_done(self) -> None:
         sources = [
