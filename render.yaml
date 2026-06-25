@@ -23,3 +23,9 @@ services:
         value: "1"
       - key: CORS_ORIGINS
         value: https://ai-product-knowledge-assistant.vercel.app,http://localhost:3000
+      # Render's free tier CPU is too weak to run the cross-encoder's
+      # per-request forward passes without adding ~9-10s to every /ask
+      # call (measured live). Local dev keeps RERANK_ENABLED defaulting to
+      # true (see config.py) — this override only affects production.
+      - key: RERANK_ENABLED
+        value: "false"
