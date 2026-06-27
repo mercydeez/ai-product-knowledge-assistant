@@ -302,3 +302,14 @@ python scripts/evaluate_rag.py
 - **Centralized, environment-driven config** (`config.py`) — every tunable (embedding model, chunk size, rerank settings, rate limits) flows through one place and is overridable via `.env`, the same pattern used in production services.
 - **Tested at the unit and integration level** (`tests/`) — the RAG-specific logic (chunking, document formatting, prompt construction, retrieval ranking, the off-topic guardrail) has dedicated tests, not just smoke tests, with GitHub Actions CI enforcing it on every push.
 - **Evaluation, not just demos** (`scripts/`) — retrieval quality (hit-rate/MRR) and answer quality (LLM-judge faithfulness/relevance) are measured against a fixed question set, the same discipline used to validate real RAG systems before shipping.
+
+## Engineering Decisions & Tradeoffs
+
+**Reranking is on locally, off in production — and that's intentional.**
+The cross-encoder reranker (`cross-encoder/ms-marco-MiniLM-L-6-v2`) improves result ordering by running a heavier model over a larger candidate pool. Locally it's fast enough to be worth it. On Render's free-tier CPU it added ~9–10s to every `/ask` call. The tell was that off-topic queries — which skip the Groq call entirely — took just as long as in-catalog ones, isolating the rerank pipeline as the bottleneck, not the LLM. Rather than degrade the live demo, `render.yaml` sets `RERANK_ENABLED=false` while local dev keeps it on by default. The off-topic relevance gate is deliberately decoupled from reranking (it reads the pre-rerank cosine score), so disabling reranking in production doesn't change the threshold calibration.
+
+**The off-topic threshold (0.30) was calibrated empirically, not guessed.**
+A round number like 0.5 would silently reject legitimate queries. Running the full question set against the vector store showed that clearly off-topic queries (jokes, general knowledge, store policy) top out around 0.26, while the lowest-scoring genuine in-catalog queries (e.g. "show me your tops") floor around 0.33–0.35. The 0.30 threshold sits in that gap. It's narrow — about 0.04–0.07 of headroom on each side — which is why `MIN_RELEVANCE_SCORE` is an env var and the CLAUDE.md warns against assuming a round number is safe without re-measuring.
+
+**`@app.middleware("http")` silently broke SSE streaming.**
+Starlette's `BaseHTTPMiddleware` (the decorator form) fully buffers the response body before forwarding it — which is fine for `/ask` (body already complete) but causes real-time streaming on `/ask/stream` to deliver all tokens at once at the end. The fix was replacing the decorator middleware with a plain ASGI class (`RequestTimingMiddleware`) that wraps the `send` callable directly, so chunks pass through immediately. This is a documented Starlette limitation but easy to miss, and it would be invisible in local testing where latency is near zero.
