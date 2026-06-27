@@ -153,7 +153,15 @@ Free tier note: the service spins down after 15 minutes idle, so the first reque
 5. Back in Render, edit the backend service's `CORS_ORIGINS` env var to include the Vercel URL, e.g. `https://ai-product-knowledge-assistant.vercel.app,http://localhost:3000`. Saving triggers an automatic redeploy. (Editing it directly in the dashboard's Environment tab is the reliable way to do this — a `git push` updating the same value in `render.yaml` did not auto-trigger a Blueprint sync for us.)
 6. Open the Vercel URL and ask a question to confirm the full stack works live.
 
-### Running the backend container locally
+### Running the full stack locally with Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Opens the frontend at `http://localhost:3000` and the backend at `http://localhost:8000`. `GROQ_API_KEY` is read from `.env` automatically. The ChromaDB collection is stored in a named volume (`chroma_data`) so it survives container restarts.
+
+### Running the backend container only
 
 ```bash
 docker build -t product-knowledge-assistant .
