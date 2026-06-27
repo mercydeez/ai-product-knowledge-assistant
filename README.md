@@ -12,9 +12,9 @@
 
 ![A question answered with a grounded answer and ranked, cited sources side-by-side](docs/screenshot-answer.png)
 
-A fashion and e-commerce product knowledge assistant: a no-LangChain Retrieval-Augmented Generation (RAG) pipeline (sentence-transformers + ChromaDB + Groq) behind a FastAPI backend, with a Next.js frontend.
+Natural-language product Q&A for e-commerce catalogs — the kind of support-reducing, discovery-improving feature that large retailers (Noon, Namshi, Amazon.ae) deploy to handle catalog questions at scale. A shopper asks a question in plain language and gets back a grounded, cited answer drawn directly from the product data; the retrieval is visible, not black-box. Built without LangChain to expose the pipeline mechanics: sentence-transformers + ChromaDB vector search + Groq, behind a FastAPI backend with a Next.js frontend.
 
-A user asks a natural-language question about the product catalog and gets back a grounded answer plus the exact retrieved product chunks it was generated from — the retrieval is visible, not just claimed. See `design.md` for the full architecture, phased build history, and frozen API contract.
+Demonstrates the full production pattern — eval-driven development, a deterministic off-topic guardrail, streaming UX, per-IP rate limiting, and a Dockerized deployment — rather than a notebook prototype. See `design.md` for the full architecture, phased build history, and frozen API contract.
 
 ## What's implemented
 
@@ -27,6 +27,36 @@ A user asks a natural-language question about the product catalog and gets back 
 - Dockerized backend deployed to Render; frontend deployed to Vercel — see **Live demo** above and **Deployment** below
 
 What it deliberately doesn't do: no database, no authentication, no multi-turn conversation history (single-shot Q&A).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph idx ["Indexing — once on startup"]
+        P[(products.json)] --> F["formatter · chunker"] --> E[embedder] --> DB[(ChromaDB)]
+    end
+
+    subgraph req ["Per request"]
+        Q[question] --> QE[embedder] --> VS["vector search\ntop-k"] --> G{"score ≥ 0.30?"}
+        G -- No --> OT[off-topic reply]
+        G -- Yes --> RR[cross-encoder reranker] --> PB[prompt builder] --> LLM["Groq / Ollama"] --> A["answer + cited sources"]
+    end
+
+    DB --> VS
+```
+
+## Quality Metrics
+
+Measured against 24 hand-built question–answer pairs covering the full product catalog:
+
+| Metric | Score |
+|---|---|
+| Hit-rate@3 (retrieval) | **100%** (24/24) |
+| MRR (retrieval) | **0.979** |
+| Avg faithfulness (LLM-judge, 1–5) | **5.00** |
+| Avg relevance (LLM-judge, 1–5) | **4.96** |
+
+Retrieval eval (`scripts/evaluate_rag.py`) runs in CI with no API key needed. LLM-judge eval (`scripts/evaluate_answers.py`) uses Groq to grade each answer 1–5 on faithfulness and relevance — run locally after changing the catalog, chunk settings, or prompt.
 
 ## Screenshots
 
