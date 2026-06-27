@@ -274,6 +274,28 @@ python scripts/evaluate_answers.py
 
 Exits non-zero if either average drops below `--min-score` (default `4.0`) — a regression check for prompt/grounding changes that `evaluate_rag.py`'s retrieval-only metrics can't catch.
 
+## Updating the Product Catalog
+
+Edit `data/products.json`, then delete the three generated artifacts so the pipeline rebuilds them on the next startup:
+
+```bash
+# Linux / macOS
+rm data/product_chunks.json data/product_embeddings.json
+rm -rf data/chroma_db/
+
+# Windows PowerShell
+Remove-Item data/product_chunks.json, data/product_embeddings.json
+Remove-Item -Recurse -Force data/chroma_db/
+```
+
+Restart the server (`uvicorn src.api.app:app --reload`) and the pipeline regenerates chunks, re-embeds them, and re-seeds the ChromaDB collection automatically — no code changes needed. The same applies after changing `CHUNK_SIZE`, `CHUNK_OVERLAP`, or `EMBEDDING_MODEL` in `.env`.
+
+After a catalog change, re-run the retrieval eval to confirm quality hasn't regressed:
+
+```bash
+python scripts/evaluate_rag.py
+```
+
 ## Why This Structure
 
 - **Modular architecture** — `src/` separates the API layer, RAG orchestration, retrieval, LLM clients, and preprocessing into independent packages, demonstrating clean separation of concerns rather than one monolithic script.
