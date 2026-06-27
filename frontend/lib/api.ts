@@ -81,10 +81,14 @@ export async function askQuestionStream(
 }
 
 export async function checkHealth(): Promise<boolean> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 10_000);
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const response = await fetch(`${API_BASE_URL}/health`, { signal: controller.signal });
     return response.ok;
   } catch {
     return false;
+  } finally {
+    clearTimeout(id);
   }
 }

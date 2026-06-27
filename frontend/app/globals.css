@@ -29,6 +29,9 @@
 
   --color-error: #b4452f;
   --color-error-soft: #fbece8;
+
+  --color-warning: #b87c1f;
+  --color-warning-soft: #fdf3e3;
 }
 
 @keyframes shimmer {

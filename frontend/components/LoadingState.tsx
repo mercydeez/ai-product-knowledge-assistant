@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 const STEP_LABELS = [
   "Embedding your question",
   "Searching the vector store",
@@ -9,6 +13,13 @@ type LoadingStateProps = {
 };
 
 export default function LoadingState({ step }: LoadingStateProps) {
+  const [showSlowHint, setShowSlowHint] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setShowSlowHint(true), 8_000);
+    return () => clearTimeout(id);
+  }, []);
+
   return (
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.2fr_1fr]">
       <div className="rounded-[20px] border border-line-soft bg-card p-7">
@@ -43,6 +54,11 @@ export default function LoadingState({ step }: LoadingStateProps) {
             );
           })}
         </div>
+        {showSlowHint && (
+          <p className="mt-5 text-center text-xs text-muted-2">
+            Taking longer than usual — the backend may be waking from sleep (~30 s)
+          </p>
+        )}
         <div className="my-[26px] h-px bg-line-soft" />
         <div className="skeleton-line mb-3 h-[13px] w-[92%] rounded-md" />
         <div className="skeleton-line mb-3 h-[13px] w-full rounded-md" />
